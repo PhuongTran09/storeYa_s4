@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Map;
 
@@ -93,9 +94,11 @@ public class AuthService implements IAuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email đã tồn tại");
         }
-
+        String hash = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
         User user = modelMapper.map(request, User.class);
+        user.setPassword(hash);
         userRepository.save(user);
+
 
         return user;
     }
