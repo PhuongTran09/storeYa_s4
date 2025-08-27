@@ -1,0 +1,14 @@
+<header class="navbar">
+  <div class="navbar-left">
+   <a routerLink="/home"><span class="logo">STORE YA</span></a>
+  </div>
+
+  <div class="navbar-right" *ngIf="isLoggedIn; else guest">
+    <span class="username">{{ username }}</span>
+    <button (click)="logout()">Logout</button>
+  </div>
+
+  <ng-template #guest>
+    <button routerLink="/login">Login</button>
+  </ng-template>
+</header>

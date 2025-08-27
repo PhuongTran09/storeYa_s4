@@ -1,0 +1,48 @@
+.navbar {
+
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: #00a7cc;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.443);
+
+  .logo {
+    margin-right: 1.5rem;
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Segoe UI', Verdana, sans-serif;
+    color: #ffffff;
+  }
+
+  button {
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    background-color: #00bae4;
+    padding: 5px 15px;
+    font-family: 'Segoe UI', Verdana, sans-serif;
+    color: white;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #007f9b;
+      color: #ffffff;
+    }
+  }
+
+  .username {
+    margin-right: 1rem;
+  }
+
+}
+
+a {
+  text-decoration: none;
+}

@@ -1,0 +1,6 @@
+
+.main-content {
+  height: calc(100vh - 50px); /* trừ chiều cao header */
+  overflow-y: auto; /* chỉ cuộn ở phần content */
+  background: #f3f6f9; /* giống màu nền */
+}

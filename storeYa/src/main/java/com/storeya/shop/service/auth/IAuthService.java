@@ -10,4 +10,7 @@ public interface IAuthService {
 
     User registerUser(RegisterRequest registerUser);
 
+    void sendOtp(String email);
+    void logout(String refreshToken);
+    void resetPassword(String email, String otp, String newPassword);
 }

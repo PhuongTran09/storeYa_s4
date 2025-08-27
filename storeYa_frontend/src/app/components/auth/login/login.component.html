@@ -1,0 +1,41 @@
+<div class="login-wrapper">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+    <h2 class="form-title">LOGIN</h2>
+
+
+    <!-- Username -->
+    <div class="div-form">  
+      <div class="form-group"
+        [ngClass]="{ 'has-error': loginForm.get('mail')?.touched && loginForm.get('mail')?.invalid }">
+        <input id="mail" type="text" formControlName="mail" placeholder="Email" />
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="div-form">
+      <div class="form-group password-wrapper"
+        [ngClass]="{ 'has-error': loginForm.get('password')?.touched && loginForm.get('password')?.invalid }">
+        <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
+          placeholder="Password" (focus)="passwordFocused = true" (blur)="passwordFocused = false" />
+        <span class="btn-show-pass" *ngIf="passwordFocused || loginForm.get('password')?.value"
+          (click)="togglePasswordVisibility()">
+          <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+        </span>
+      </div>
+      <div class="forgot-password-link">
+        <a routerLink="/forgot-password">Forgot password?</a>
+      </div>
+    </div>
+
+    <div class="field-error" *ngIf="showLoginError">
+      Tài khoản hoặc mật khẩu không chính xác.
+    </div>
+    <!-- Submit -->
+    <button type="submit" [disabled]="loginForm.invalid">Login</button>
+
+    <!-- Register link -->
+    <div class="form-links">
+      <p>Don't have an account? <a routerLink="/register">Register</a></p>
+    </div>
+  </form>
+</div>

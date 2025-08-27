@@ -1,16 +1,14 @@
 package com.storeya.shop.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
+
+@Data
 public class LoginRequest {
 
     @NotBlank(message = "Không được để trống")
-    private String username;
+    private String mail;
     @NotBlank(message = "Không được để trống")
     private String password;
-
 }

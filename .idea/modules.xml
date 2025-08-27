@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/storeYa/storeYa.iml" filepath="$PROJECT_DIR$/storeYa/storeYa.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/storeYa_s4.iml" filepath="$PROJECT_DIR$/.idea/storeYa_s4.iml" />
     </modules>
   </component>
