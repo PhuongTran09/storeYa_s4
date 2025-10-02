@@ -1,6 +1,8 @@
 package com.storeya.shop.service.cart;
 
 import com.storeya.shop.entity.Cart;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import java.util.List;
 
 public interface ICartService {

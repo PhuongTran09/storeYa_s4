@@ -10,15 +10,13 @@ import java.util.List;
 @Setter
 @Getter
 @Table(name = "carts")
-public class Cart {
+public class
+Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Nếu user login
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    private Long userId;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> items = new java.util.ArrayList<>();

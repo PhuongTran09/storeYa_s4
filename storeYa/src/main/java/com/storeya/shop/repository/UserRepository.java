@@ -9,9 +9,13 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
+
     boolean existsByEmail(String email);
+
     @Query("SELECT u FROM User u WHERE LOWER(TRIM(u.email)) = LOWER(TRIM(:email))")
     Optional<User> findByEmailNormalized(@Param("email") String email);
+
+    Optional<User> findByUsername(String username);
 
     Optional<User> findById(Long id);
 

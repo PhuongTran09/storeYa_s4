@@ -7,8 +7,11 @@
     </div>
   </div>
   <div class="flex items-center gap-2">
-    <input type="number" min="1" [value]="item.quantity"
-           (change)="onQtyChange($event)" class="w-16 border rounded p-1 text-center">
+    <!-- Dùng [(ngModel)] để binding -->
+    <input type="number" min="1"
+           [(ngModel)]="item.quantity"
+           (ngModelChange)="onQtyChange($event)"
+           class="w-16 border rounded p-1 text-center">
     <button (click)="remove()" class="text-red-500 hover:text-red-700 font-bold">X</button>
   </div>
 </div>

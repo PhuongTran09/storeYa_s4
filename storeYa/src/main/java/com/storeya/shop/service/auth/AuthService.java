@@ -245,5 +245,16 @@ public class AuthService implements IAuthService {
 
     }
 
+    @Override
+    public Long getUserIdFromToken(Jwt principal) {
+        // sub không phải số => dùng preferred_username hoặc email
+        String username = principal.getClaim("preferred_username");
+        // tra DB ra userId theo username
+        return userRepository.findByUsername(username)
+                .map(User::getId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+    }
+
+
 
 }

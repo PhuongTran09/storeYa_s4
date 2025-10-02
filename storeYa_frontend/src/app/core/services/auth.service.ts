@@ -34,39 +34,39 @@ export class AuthService {
   }
 
 
-  login(account: { mail: string; password: string }) {
-  return this.http.post(BASE_URL + '/login', account, { headers: { noauth: 'noauth' } }).pipe(
-    tap((res: any) => {
-      localStorage.setItem('access_token', res.accessToken);
-      localStorage.setItem('refresh_token', res.refreshToken);
+    login(account: { mail: string; password: string }) {
+    return this.http.post(BASE_URL + '/login', account, { headers: { noauth: 'noauth' } }).pipe(
+      tap((res: any) => {
+        localStorage.setItem('access_token', res.accessToken);
+        localStorage.setItem('refresh_token', res.refreshToken);
 
-      const expiresAt = Date.now() + res.expiresIn * 1000;
-      localStorage.setItem('expires_at', expiresAt.toString());
-      this.authState.next(true);
-      this.scheduleTokenExpiry(res.accessToken);
-    }),
-    catchError(err => throwError(() => err))
-  );
-}
+        const expiresAt = Date.now() + res.expiresIn * 1000;
+        localStorage.setItem('expires_at', expiresAt.toString());
+        this.authState.next(true);
+        this.scheduleTokenExpiry(res.accessToken);
+      }),
+      catchError(err => throwError(() => err))
+    );
+  }
 
 
-  private scheduleTokenExpiry(token: string) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const exp = payload.exp * 1000;
-      const now = Date.now();
-      const timeout = exp - now;
+    private scheduleTokenExpiry(token: string) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const exp = payload.exp * 1000;
+        const now = Date.now();
+        const timeout = exp - now;
 
-      if (timeout > 0) {
-        setTimeout(() => this.refreshToken().subscribe(), timeout);
-      } else {
+        if (timeout > 0) {
+          setTimeout(() => this.refreshToken().subscribe(), timeout);
+        } else {
+          this.logout();
+        }
+      } catch (e) {
+        console.error('Token invalid:', e);
         this.logout();
       }
-    } catch (e) {
-      console.error('Token invalid:', e);
-      this.logout();
     }
-  }
 
 
 

@@ -3,11 +3,9 @@ package com.storeya.shop.service.cart;
 import com.storeya.shop.entity.Cart;
 import com.storeya.shop.entity.CartItem;
 import com.storeya.shop.entity.Product;
-import com.storeya.shop.entity.User;
 import com.storeya.shop.repository.CartItemRepository;
 import com.storeya.shop.repository.CartRepository;
 import com.storeya.shop.repository.ProductRepository;
-import com.storeya.shop.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -20,32 +18,25 @@ public class CartService implements ICartService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final CartItemRepository cartItemRepository;
-    private final UserRepository userRepository;
 
     public CartService(CartRepository cartRepository,
                        ProductRepository productRepository,
-                       CartItemRepository cartItemRepository,
-                       UserRepository userRepository) {
+                       CartItemRepository cartItemRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
         this.cartItemRepository = cartItemRepository;
-        this.userRepository = userRepository;
     }
 
-    /** Helper: cập nhật tổng tiền cart */
     private void updateCartTotal(Cart cart) {
         cart.setTotalPrice(cart.getItems().stream()
                 .mapToDouble(CartItem::getPrice)
                 .sum());
     }
 
-    /** Helper: lấy hoặc tạo cart theo userId */
     private Cart getOrCreateCart(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return cartRepository.findByUser(user).orElseGet(() -> {
+        return cartRepository.findByUserId(userId).orElseGet(() -> {
             Cart cart = new Cart();
-            cart.setUser(user);
+            cart.setUserId(userId);
             cart.setTotalPrice(0.0);
             return cartRepository.save(cart);
         });
@@ -76,15 +67,15 @@ public class CartService implements ICartService {
                 if (product.getStock() < quantity)
                     throw new RuntimeException("Not enough stock for product: " + product.getName());
                 item.setQuantity(newQuantity);
-                item.setPrice(item.getProduct().getPrice() * item.getQuantity());
+                item.setPrice(product.getPrice() * newQuantity);
                 cartItemRepository.save(item);
                 product.setStock(product.getStock() - quantity);
             }
-            productRepository.save(product);
         } else {
             if (quantity < 0) throw new RuntimeException("Quantity cannot be negative");
             if (product.getStock() < quantity)
                 throw new RuntimeException("Not enough stock for product: " + product.getName());
+
             CartItem item = new CartItem();
             item.setCart(cart);
             item.setProduct(product);
@@ -94,9 +85,9 @@ public class CartService implements ICartService {
             cartItemRepository.save(item);
 
             product.setStock(product.getStock() - quantity);
-            productRepository.save(product);
         }
 
+        productRepository.save(product);
         updateCartTotal(cart);
         return cartRepository.save(cart);
     }

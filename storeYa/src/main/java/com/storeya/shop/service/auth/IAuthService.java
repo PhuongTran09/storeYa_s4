@@ -14,4 +14,5 @@ public interface IAuthService {
     void sendOtp(String email);
     void logout(String refreshToken);
     void resetPassword(String email, String otp, String newPassword);
+    Long getUserIdFromToken(Jwt principal);
 }
