@@ -1,0 +1,32 @@
+<nav class="w-full bg-white shadow-md sticky top-0 z-50">
+  <div class="mx-auto flex items-center justify-between px-4 py-4 lg:px-4">
+
+    <!-- Logo -->
+    <a routerLink="/admin/dashboard" class="text-xl font-bold text-blue-400">
+      YA ADMIN
+    </a>
+
+    <!-- Search -->
+    <form class="relative mx-4 flex-1 max-w-md">
+      <input type="search" placeholder="Search ..." class="w-full pl-10 pr-4 py-2 border rounded-full shadow-sm 
+               focus:ring-2 focus:ring-blue-400 focus:border-blue-400 
+               outline-none transition" />
+      <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </form>
+
+    <!-- User info -->
+    <div class="flex items-center gap-4">
+      <span class="text-gray-700 font-medium">{{ username }}</span>
+      <button (click)="logout()"
+        class="px-4 py-2 text-sm bg-gray-500 text-white rounded-md hover:bg-blue-600 transition">
+        Logout
+      </button>
+    </div>
+  </div>
+</nav>
+
+<app-confirm-dialog *ngIf="showLogoutConfirm" [title]="'Confirm logout'" [message]="'Do you really want to log out?'"
+  [confirmText]="'Yes'" [cancelText]="'No'" (confirmed)="onConfirmLogout()"
+  (cancelled)="onCancelLogout()"></app-confirm-dialog>

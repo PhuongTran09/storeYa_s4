@@ -10,8 +10,6 @@ import lombok.Setter;
 @Table(name = "users")
 public class User {
 
-    // SETTERS
-    // GETTERS
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,16 +20,5 @@ public class User {
     private String lastName;
     private String email;
 
-    public User() {
-    }
-
-    public User(Long id, String username, String password, String firstName, String lastName, String email) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-    }
 
 }

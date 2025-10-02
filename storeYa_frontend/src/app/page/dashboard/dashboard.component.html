@@ -1,0 +1,12 @@
+<!-- Layout chính -->
+<section class="scrollbar-hide h-screen overflow-hidden">
+   <app-navbar-admin></app-navbar-admin>
+   <section class="flex">
+      <app-sidebar-admin (viewChange)="show($event)"></app-sidebar-admin>
+      <!-- Content -->
+      <section class="bg-gray-50 w-full overflow-auto h-screen scrollbar-hide">
+         <app-product-list *ngIf="currentView === 'products'"></app-product-list>
+         <app-category-list *ngIf="currentView === 'categories'"></app-category-list>
+      </section>
+   </section>
+</section>

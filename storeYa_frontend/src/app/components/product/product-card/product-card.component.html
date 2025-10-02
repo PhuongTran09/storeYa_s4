@@ -1,0 +1,22 @@
+<div
+  class="px-4 py-4 h-full flex flex-col rounded-xl overflow-hidden transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-xl bg-gray-100"
+  (click)="goToDetail()">
+  <!-- Hình ảnh -->
+  <img class="w-full h-52 object-cover rounded-xl"
+    [src]="product.imageUrls?.[0] || 'https://via.placeholder.com/400x200?text=No+Image'" [alt]="product.name" />
+
+
+
+  <!-- Nội dung -->
+  <div class="flex-1 p-4 text-left">
+    <h2 class="font-bold text-xl mb-2 text-gray-800 truncate">
+      {{ product.name }}
+    </h2>
+    <p class="text-sm text-gray-500 mb-2 h-10 overflow-hidden text-ellipsis">
+      {{ product.description }}
+    </p>
+    <p class="text-green-600 font-semibold text-base text-right">
+      {{ product.price | vnd }}
+    </p>
+  </div>
+</div>

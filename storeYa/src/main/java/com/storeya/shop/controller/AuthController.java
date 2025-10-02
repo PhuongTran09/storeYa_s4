@@ -29,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request) {
 
         try {
             TokenResponse token = authService.login(request);
@@ -99,6 +99,19 @@ public class AuthController {
         session.invalidate(); // clear session
         return ResponseEntity.ok(Map.of("message", "Logout thành công"));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        try {
+            TokenResponse newToken = authService.refreshToken(refreshToken);
+            return ResponseEntity.ok(newToken);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
+    }
+
+
 
 
 }

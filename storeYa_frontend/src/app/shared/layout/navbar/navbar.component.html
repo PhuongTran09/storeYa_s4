@@ -1,14 +1,111 @@
-<header class="navbar">
-  <div class="navbar-left">
-   <a routerLink="/home"><span class="logo">STORE YA</span></a>
-  </div>
+<nav class="w-full bg-white shadow-md sticky top-0 z-50">
+  <div class="mx-auto flex items-center justify-between px-4 py-4 lg:px-4">
 
-  <div class="navbar-right" *ngIf="isLoggedIn; else guest">
-    <span class="username">{{ username }}</span>
-    <button (click)="logout()">Logout</button>
-  </div>
+    <!-- Logo -->
+    <a href="#" class=" ml-2 text-xl font-bold text-blue-600">STORE YA</a>
 
-  <ng-template #guest>
-    <button routerLink="/login">Login</button>
-  </ng-template>
-</header>
+    <!-- Content -->
+    <div id="menu-content"
+      class="absolute lg:static top-16 left-0 w-full lg:w-auto bg-white lg:flex lg:items-center lg:justify-between shadow-md lg:shadow-none transition-all duration-300"
+      [ngClass]="{ 'hidden': !isMenuOpen, 'block': isMenuOpen, 'lg:block': true }">
+      <!-- Search -->
+      <form
+        class="relative  mx-4 my-4 lg:my-0 flex rounded-full border shadow-sm overflow-hidden  w-xlg:w-[400px]">
+        <input type="search" placeholder="Search products..." class="w-full pl-10 pr-4 py-2 border rounded-full shadow-sm 
+           focus:ring-2 focus:ring-blue-400 focus:border-blue-400 
+           outline-none transition" />
+        <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </form>
+      <!-- Menu -->
+      <ul class="flex flex-col lg:flex-row lg:items-center  text-gray-700 px-4">
+        <li><a href="#" class="block px-3 py-2 hover:text-blue-600">Categories</a></li>
+        <li><a href="#" class="block px-3 hover:text-blue-600">About</a></li>
+        <!-- Login -->
+        <!-- Login / User -->
+        <li class="relative mt-2 lg:mt-0 mb-2 lg:mb-0">
+          <!-- Chưa login -->
+          <button *ngIf="!isLoggedIn" (click)="toggleLogin()"
+            class="px-4 py-2 border border-blue-600 text-blue-600 rounded-md text-sm hover:bg-blue-600 hover:text-white transition">
+            Login
+          </button>
+          <div *ngIf="isLoggedIn" class="relative group">
+            <button class="px-4 py-2 flex items-center justify-evenly text-blue-600 rounded-md text-sm 
+               hover:text-black transition w-32 after:absolute after:h-10 after:top-7 after:inset-0 after:bg-transparent ">
+               
+              <span class="">{{ username }}</span>
+              <i class="fa-solid fa-chevron-down ml-2"></i>
+            </button>
+
+            <!-- Dropdown -->
+            <ul class="absolute left-0 mt-1 w-32 bg-white border shadow-lg rounded-md z-50 
+            group-hover:block hidden">
+              <li>
+                <button (click)="logout()"
+                  class="block w-full text-left px-4 py-2 hover:bg-gray-100 hover:text-blue-600 transition">
+                  Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+
+
+
+
+        </li>
+
+        <!-- Dynamic Modal login/register/forgot -->
+        <div *ngIf="showLogin || showRegister || showForgotPassword"
+          class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 z-50" (click)="closeAll()">
+          <div class="w-[600px] mx-4 bg-white shadow-lg rounded-lg transform transition-all duration-300 ease-out"
+            [ngClass]="{ 'opacity-100 scale-100': !isClosing, 'opacity-0 scale-95': isClosing }"
+            (click)="$event.stopPropagation()">
+
+            <ng-container *ngIf="showLogin">
+              <app-login (registerClick)="switchToRegister()"
+                (forgotPasswordClick)="switchToForgotPassword()" (loginSuccess)="onLoginSuccess()"></app-login>
+            </ng-container>
+
+            <ng-container *ngIf="showRegister">
+              <app-register (loginClick)="switchToLogin()"></app-register>
+            </ng-container>
+
+            <ng-container *ngIf="showForgotPassword">
+              <app-forgot-password (loginClick)="switchToLogin()"></app-forgot-password>
+            </ng-container>
+
+          </div>
+        </div>
+
+      </ul>
+    </div>
+    <!-- Bên phải: Cart + Toggle -->
+    <div class="flex items-center space-x-4">
+      <!-- Cart -->
+      <div class="relative">
+        <a routerLink="/cart" class="flex items-center px-3 py-2 hover:text-blue-600">
+          <i class="fa-solid fa-cart-shopping text-lg"></i>
+          <!-- Badge số lượng -->
+          <!-- <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full">3</span> -->
+        </a>
+      </div>
+
+
+
+      <!-- Toggle button (Mobile) -->
+      <button class="lg:hidden text-2xl text-gray-700 focus:outline-none" (click)="isMenuOpen = !isMenuOpen">
+        <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+<app-confirm-dialog
+  *ngIf="showLogoutConfirm"
+  [title]="'Confirm logout'"
+  [message]="'Do you really want to log out?'"
+  [confirmText]="'Yes'"
+  [cancelText]="'No'"
+  (confirmed)="onConfirmLogout()"
+  (cancelled)="onCancelLogout()"
+></app-confirm-dialog>

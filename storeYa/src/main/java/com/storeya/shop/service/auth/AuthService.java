@@ -7,6 +7,7 @@ import com.storeya.shop.entity.User;
 import com.storeya.shop.repository.UserRepository;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.representations.AccessToken;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -14,6 +15,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -53,6 +55,7 @@ public class AuthService implements IAuthService {
         this.redisTemplate = redisTemplate;
         this.javaMailSender = javaMailSender;
     }
+
     @Override
     public void logout(String refreshToken) {
         String url = String.format("%s/realms/%s/protocol/openid-connect/logout", authUrl, realm);
@@ -75,7 +78,6 @@ public class AuthService implements IAuthService {
     @SuppressWarnings("UseSpecificCatch")
     public TokenResponse login(LoginRequest request) {
         String url = String.format("%s/realms/%s/protocol/openid-connect/token", authUrl, realm);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -108,6 +110,7 @@ public class AuthService implements IAuthService {
                     body.get("access_token").toString(),
                     body.get("refresh_token").toString(),
                     Long.parseLong(body.get("expires_in").toString())
+
             );
         } catch (Exception e) {
             throw new RuntimeException("Login failed: " + e.getMessage());
@@ -144,7 +147,7 @@ public class AuthService implements IAuthService {
 
         try {
             String otp = String.format("%06d", new Random().nextInt(999999));
-            redisTemplate.opsForValue().set("OTP:" + normalizedEmail, otp, 5, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set("OTP:" + normalizedEmail, otp, 2, TimeUnit.MINUTES);
 
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -157,7 +160,7 @@ public class AuthService implements IAuthService {
                             <p>Xin chào,</p>
                             <p>Mã OTP của bạn là:</p>
                             <div style='font-size: 20px; font-weight: bold; color: #ff4d4f;'>%s</div>
-                            <p>Mã sẽ hết hạn sau <b>5 phút</b>.</p>
+                            <p>Mã sẽ hết hạn sau <b>2 phút</b>.</p>
                             <p>Trân trọng,<br/>Store Ya Support</p>
                         </div>
                     """.formatted(otp);
@@ -195,8 +198,51 @@ public class AuthService implements IAuthService {
         user.setPassword(hash);
         userRepository.save(user);
 
-        // Xóa OTP sau khi dùng
+
         redisTemplate.delete("OTP:" + normalizedEmail);
+    }
+
+
+    @Override
+    public TokenResponse refreshToken(String refreshToken) {
+        String url = String.format("%s/realms/%s/protocol/openid-connect/token", authUrl, realm);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "refresh_token");
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+        form.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(form, headers);
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    new ParameterizedTypeReference<>() {
+                    }
+            );
+
+            Map<String, Object> body = response.getBody();
+            if (body == null || !body.containsKey("access_token")) {
+                throw new RuntimeException("Keycloak response missing token info");
+            }
+
+            return new TokenResponse(
+                    body.get("access_token").toString(),
+                    body.get("refresh_token").toString(),
+                    Long.parseLong(body.get("expires_in").toString())
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Refresh failed: " + e.getMessage());
+        }
+
+
     }
 
 

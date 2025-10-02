@@ -1,0 +1,43 @@
+<div class="flex justify-end mt-4 space-x-2">
+  <!-- Prev -->
+  <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1"
+    class="px-3 py-1 border rounded disabled:opacity-50 bg-white hover:bg-blue-300">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+
+  <!-- Trang 1 -->
+  <button *ngIf="pages[0] > 1" (click)="changePage(1)" 
+    class="px-3 py-1 border rounded hover:bg-blue-100 "
+    [class.bg-blue-500]="currentPage === 1"
+    [class.text-white]="currentPage === 1">
+    1
+  </button>
+
+  <!-- ... trước -->
+  <span *ngIf="pages[0] > 2">...</span>
+
+  <!-- Các trang giữa -->
+  <button *ngFor="let page of pages" (click)="changePage(page)"
+    [class.bg-blue-500]="currentPage === page"
+    [class.text-white]="currentPage === page"
+    class="px-3 py-1 border rounded hover:bg-blue-100">
+    {{ page }}
+  </button>
+
+  <!-- ... sau -->
+  <span *ngIf="pages[pages.length - 1] < totalPages - 1">...</span>
+
+  <!-- Trang cuối -->
+  <button *ngIf="pages[pages.length - 1] < totalPages" (click)="changePage(totalPages)"
+    class="px-3 py-1 border rounded hover:bg-blue-100"
+    [class.bg-blue-500]="currentPage === totalPages"
+    [class.text-white]="currentPage === totalPages">
+    {{ totalPages }}
+  </button>
+
+  <!-- Next -->
+  <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages"
+    class="px-3 py-1 border rounded disabled:opacity-50 bg-white hover:bg-blue-300">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+</div>

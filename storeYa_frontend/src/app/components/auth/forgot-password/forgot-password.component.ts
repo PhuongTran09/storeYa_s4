@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,6 +12,12 @@ import { Router, RouterModule } from '@angular/router';
   styleUrls: ['./forgot-password.component.scss']
 })
 export class ForgotPasswordComponent implements OnInit {
+
+  @Output() loginClick = new EventEmitter<void>();
+
+  openLogin() {
+    this.loginClick.emit();
+  }
 
   forgotForm!: FormGroup;
   showPassword = false;
@@ -93,7 +99,7 @@ resetPassword() {
         this.forgotForm.reset(); // reset form sau khi thành công
         this.loading = false;
         this.otpSent = false; // nếu muốn gửi OTP lại
-        setTimeout(() => this.router.navigate(['/login']), 2000);
+        setTimeout(() => this.openLogin(), 2000);
       },
       error: err => {
         alert(err.message || 'Có lỗi xảy ra, thử lại sau!');

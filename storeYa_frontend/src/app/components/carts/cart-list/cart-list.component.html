@@ -1,0 +1,22 @@
+<div class="max-w-xl mx-auto mt-6 p-4 bg-white rounded shadow">
+  <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+  
+  <div *ngIf="cartItems.length > 0; else emptyCart">
+    <app-cart-item
+      *ngFor="let item of cartItems"
+      [item]="item"
+      (removeItem)="removeItem($event)"
+      (quantityChange)="updateQuantity($event)"
+    ></app-cart-item>
+
+    <div class="mt-4 text-right">
+      <p class="text-xl font-semibold">Total: ${{ total }}</p>
+      <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" 
+              (click)="checkout()">Checkout</button>
+    </div>
+  </div>
+
+  <ng-template #emptyCart>
+    <p class="text-gray-500">Your cart is empty.</p>
+  </ng-template>
+</div>

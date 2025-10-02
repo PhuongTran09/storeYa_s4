@@ -1,0 +1,69 @@
+<h2 class="text-xl font-bold mb-4">
+       {{ product ? 'Edit Product' : 'Add Product' }}
+</h2>
+
+<form (ngSubmit)="saveProduct()" class="space-y-4 " enctype="multipart/form-data">
+       <input [(ngModel)]="formData.name" name="name" type="text" placeholder="Name"
+              class="w-full border px-3 py-2 rounded" required />
+
+       <textarea [(ngModel)]="formData.description" name="description" placeholder="Description"
+              class="w-full border px-3 py-2 rounded"></textarea>
+
+       <input [(ngModel)]="formData.price" name="price" type="number" placeholder="Price"
+              class="w-full border px-3 py-2 rounded" required />
+
+       <input [(ngModel)]="formData.stock" name="stock" type="number" placeholder="Stock"
+              class="w-full border px-3 py-2 rounded" required />
+
+       <!-- Category dropdown -->
+       <select [(ngModel)]="formData.categoryId" name="categoryId" class="w-full border px-3 py-2 rounded" required>
+              <option value="" disabled selected>Select Category</option>
+              <option *ngFor="let c of categories" [value]="c.id">
+                     {{ c.name }}
+              </option>
+       </select>
+
+
+
+       <!-- Preview ảnh -->
+       <div class=" border p-4 rounded bg-gray-50">
+              <div class="flex items-center gap-4">
+                     <input type="file" accept="image/png, image/jpeg" multiple (change)="onFileSelected($event)"
+                            class="hidden" #fileInput />
+                     <button type="button" (click)="fileInput.click()"
+                            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Chọn tệp
+                     </button>
+              </div>
+              <div class="flex flex-wrap gap-4 mt-4">
+                     <div *ngFor="let file of selectedFiles; let i = index"
+                            class="relative w-20 h-20 border rounded overflow-hidden">
+                            <img [src]="file.preview" class="w-full h-full object-cover" />
+                            <button type="button" (click)="removeFile(i)"
+                                   class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
+                                   ×
+                            </button>
+                     </div>
+              </div>
+       </div>
+
+
+       <div class="flex justify-end gap-2">
+              <button type="button" (click)="closeForm.emit()"
+                     class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+              <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                     {{ product ? 'Update' : 'Save' }}
+              </button>
+       </div>
+
+</form>
+
+<app-confirm-dialog
+  *ngIf="showConfirm"
+  [title]="product ? 'Confirm update' : 'Confirm create'"
+  [message]="product ? 'Do you want to update this product?' : 'Do you want to create this product?'"
+  [confirmText]="'Yes'"
+  [cancelText]="'No'"
+  (confirmed)="onConfirmSave()"
+  (cancelled)="onCancelSave()"
+></app-confirm-dialog>

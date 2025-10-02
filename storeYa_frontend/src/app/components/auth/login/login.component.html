@@ -1,41 +1,62 @@
-<div class="login-wrapper">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-    <h2 class="form-title">LOGIN</h2>
-
+<div class="flex justify-center items-center p-6 px-6">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="bg-white py-4  rounded-xl  w-full max-w-[400px]">
+    <!-- Title -->
+    <h2 class="mb-6 text-center font-bold text-2xl text-blue-600">
+      LOGIN
+    </h2>
 
     <!-- Username -->
-    <div class="div-form">  
-      <div class="form-group"
-        [ngClass]="{ 'has-error': loginForm.get('mail')?.touched && loginForm.get('mail')?.invalid }">
-        <input id="mail" type="text" formControlName="mail" placeholder="Email" />
+    <div class="mb-4">
+      <div class="flex flex-col" [ngClass]="{
+          'border-red-500':
+            loginForm.get('mail')?.touched && loginForm.get('mail')?.invalid
+        }">
+        <input id="mail" type="text" formControlName="mail" placeholder="Email"
+          class="px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition" />
       </div>
     </div>
 
     <!-- Password -->
-    <div class="div-form">
-      <div class="form-group password-wrapper"
-        [ngClass]="{ 'has-error': loginForm.get('password')?.touched && loginForm.get('password')?.invalid }">
+    <div class="mb-4">
+      <div class="relative" [ngClass]="{
+          'border-red-500':
+            loginForm.get('password')?.touched &&
+            loginForm.get('password')?.invalid
+        }">
         <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-          placeholder="Password" (focus)="passwordFocused = true" (blur)="passwordFocused = false" />
-        <span class="btn-show-pass" *ngIf="passwordFocused || loginForm.get('password')?.value"
-          (click)="togglePasswordVisibility()">
+          placeholder="Password" (focus)="passwordFocused = true" (blur)="passwordFocused = false"
+          class="px-4 py-3 w-full border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition pr-10" />
+
+        <!-- Toggle password -->
+        <span class="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400"
+          *ngIf="passwordFocused || loginForm.get('password')?.value" (click)="togglePasswordVisibility()">
           <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
         </span>
       </div>
-      <div class="forgot-password-link">
-        <a routerLink="/forgot-password">Forgot password?</a>
+
+      <!-- Forgot password -->
+      <div class="text-right mt-1 pr-2 text-xs">
+        <a (click)="openForgotPassword()" class="text-blue-600 hover:underline cursor-pointer">Forgot password?</a>
       </div>
     </div>
 
-    <div class="field-error" *ngIf="showLoginError">
+    <!-- Error -->
+    <div *ngIf="showLoginError" class="text-red-500 text-sm pl-2 mt-2 animate-fadeIn">
       Tài khoản hoặc mật khẩu không chính xác.
     </div>
-    <!-- Submit -->
-    <button type="submit" [disabled]="loginForm.invalid">Login</button>
 
-    <!-- Register link -->
-    <div class="form-links">
-      <p>Don't have an account? <a routerLink="/register">Register</a></p>
+    <!-- Submit -->
+    <button type="submit" [disabled]="loginForm.invalid"
+      class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg mt-3 transition hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+      Login
+    </button>
+
+    <!-- Register -->
+    <div class="mt-4 text-center text-sm">
+      <p>
+        Don't have an account?
+        <a (click)="openRegister()" class="text-blue-600 hover:underline cursor-pointer">Register</a>
+      </p>
     </div>
   </form>
 </div>

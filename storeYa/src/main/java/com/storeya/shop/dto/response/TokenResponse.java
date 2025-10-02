@@ -15,6 +15,7 @@ public class TokenResponse {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.expiresIn = expiresIn;
+
     }
 
 }

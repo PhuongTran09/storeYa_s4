@@ -21,7 +21,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
-            "/api/auth/**"
+            "/api/products/public/**",
+            "/api/auth/**",
+            "/api/carts/**"
     };
 
     @Bean
@@ -31,6 +33,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers("/api/admin/**").hasAuthority("admin")
+                        .requestMatchers("/api/user/**").hasAuthority("user")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter()))

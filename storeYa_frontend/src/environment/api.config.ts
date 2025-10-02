@@ -1,5 +1,12 @@
 export const environment = {
-  production: false
+  production: false,
+  cloudinary: {
+    cloudName: 'dz0dqy62d',
+    uploadPreset: 'store_ya',
+    folder: 'imageProduct_storeYa'
+
+  },
+  
 };
 
 export const apiUrl = {

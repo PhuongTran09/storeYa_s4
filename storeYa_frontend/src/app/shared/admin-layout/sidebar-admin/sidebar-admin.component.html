@@ -1,0 +1,30 @@
+<aside class="px-2 left-0 h-screen w-fit bg-white border-r shadow-md z-20">
+  <nav class="p-4 space-y-2">
+    <button (click)="selectView('products')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
+             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'products'"
+      [class.text-white]="selectedView === 'products'">
+      <i class="fa-solid fa-shirt"></i> Products
+    </button>
+
+    <button (click)="selectView('categories')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
+             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'categories'"
+      [class.text-white]="selectedView === 'categories'">
+      <i class="fa-solid fa-palette"></i> Categories
+    </button>
+
+
+    <button (click)="selectView('exports')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
+             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'exports'"
+      [class.text-white]="selectedView === 'exports'">
+      <i class="fa-solid fa-file-export"></i> Exports
+    </button>
+
+    <button (click)="selectView('settings')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
+             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'settings'"
+      [class.text-white]="selectedView === 'settings'">
+      <i class="fa-solid fa-gear"></i> Settings
+    </button>
+
+
+  </nav>
+</aside>

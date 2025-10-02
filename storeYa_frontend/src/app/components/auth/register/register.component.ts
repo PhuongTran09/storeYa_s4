@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -17,6 +17,13 @@ import { catchError, of } from 'rxjs';
   ]
 })
 export class RegisterComponent implements OnInit {
+
+    @Output() loginClick = new EventEmitter<void>();
+
+  openLogin() {
+    this.loginClick.emit();
+  }
+  
   registerForm!: FormGroup;
   isSubmitting = false;
   showPassword = false;
@@ -114,7 +121,7 @@ export class RegisterComponent implements OnInit {
       next: () => {
         this.notifyMessage = 'Đăng ký thành công! Chuyển hướng đến trang đăng nhập...';
         this.notifyType = 'success';
-        setTimeout(() => this.router.navigate(['/login']), 2000);
+        setTimeout(() => this.openLogin(), 2000);
       },
       error: (err) => {
         this.notifyMessage = err.error?.message || 'Đăng ký thất bại!';

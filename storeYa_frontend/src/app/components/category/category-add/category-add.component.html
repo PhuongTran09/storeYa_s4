@@ -1,0 +1,27 @@
+<h2 class="text-xl font-bold mb-4">
+  {{ category ? 'Edit Category' : 'Add Category' }}
+</h2>
+
+<form (ngSubmit)="saveCategory()" class="space-y-4">
+  <input [(ngModel)]="formData.name" name="name" type="text" placeholder="Category Name"
+    class="w-full border px-3 py-2 rounded" required />
+
+  <div class="flex justify-end gap-2">
+    <button type="button" (click)="cancel()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+      Cancel
+    </button>
+    <button type="submit" [disabled]="saving" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+      {{ category ? 'Update' : 'Save' }}
+    </button>
+  </div>
+</form>
+
+<app-confirm-dialog
+  *ngIf="showConfirm"
+  [title]="category ? 'Confirm update' : 'Confirm create'"
+  [message]="category ? 'Do you want to update this category?' : 'Do you want to create this category?'"
+  [confirmText]="'Yes'"
+  [cancelText]="'No'"
+  (confirmed)="onConfirmSave()"
+  (cancelled)="onCancelSave()"
+></app-confirm-dialog>

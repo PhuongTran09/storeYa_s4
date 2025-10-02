@@ -1,0 +1,15 @@
+<div *ngIf="toast"
+    class="fixed top-6 left-1/2 -translate-x-1/2 w-[360px] max-w-[90%] bg-white rounded-lg shadow-lg border text-gray-800 z-50 animate-slide-down">
+    <!-- Header -->
+    <div class="flex justify-between items-center px-4 py-2 border bg-gray-100">
+        <strong class="font-semibold">Notification</strong>
+        <button (click)="closeToast()" class="text-gray-400 hover:text-gray-600 text-lg leading-none">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Body -->
+    <div class="px-4 py-3">
+        <p class="text-sm">{{ toast.message }}</p>
+    </div>
+</div>
