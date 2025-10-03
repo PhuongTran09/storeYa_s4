@@ -3,13 +3,16 @@ import { CartItem, CartService } from '../../../core/services/cart.service';
 import { Subject, takeUntil } from 'rxjs';
 import { CartItemComponent } from '../cart-item/cart-item.component';
 import { CommonModule } from '@angular/common';
+import { VndPipe } from '../../../shared/pipes/truncate.pipe';
+import { HeaderComponent } from '../../../shared/layout/navbar/navbar.component';
 
 @Component({
   selector: 'app-cart-list',
   templateUrl: './cart-list.component.html',
   styleUrls: ['./cart-list.component.scss'],
   standalone: true,
-  imports: [CommonModule, CartItemComponent]
+  imports: [CommonModule, CartItemComponent, VndPipe, HeaderComponent],
+  
 })
 export class CartListComponent implements OnInit {
   private destroy$ = new Subject<void>();
@@ -20,14 +23,6 @@ export class CartListComponent implements OnInit {
   constructor(private cartService: CartService) { }
 
   ngOnInit() {
-    // Không cần userId
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      console.warn('⚠️ Chưa login → không load giỏ hàng');
-      return;
-    }
-
-    // Load cart cho user hiện tại (backend tự lấy từ token)
     this.cartService.loadCart().subscribe({
       next: () => console.log('Cart loaded'),
       error: err => console.error('Load cart failed', err)
@@ -40,10 +35,18 @@ export class CartListComponent implements OnInit {
         this.total = this.cartService.getTotal();
       });
   }
-
-  removeItem(id: number) {
-    this.cartService.removeFromCart(id).subscribe();
+  removeItem(productId: number) {
+    this.cartService.removeItem(productId).subscribe({
+      next: cart => {
+        // cartService sẽ emit cart$. Cập nhật cartItems ở đây optional
+        this.cartItems = cart?.items ?? [];
+        this.total = this.cartService.getTotal();
+      },
+      error: err => console.error('Failed to remove item', err)
+    });
   }
+
+
 
   updateQuantity(event: { id: number; qty: number }) {
     this.cartService.updateQuantity(event.id, event.qty).subscribe();

@@ -21,52 +21,19 @@ export class AuthService {
   private authState = new BehaviorSubject<boolean>(this.hasToken());
   isAuthenticated$ = this.authState.asObservable();
 
-  constructor() {
-    const token = localStorage.getItem('access_token');
-    const expiresAt = Number(localStorage.getItem('expires_at') || 0);
-
-    if (token && Date.now() < expiresAt) {
-      this.authState.next(true);
-      this.scheduleTokenExpiry(token);
-    } else {
-      this.logout();
-    }
-  }
-
 
     login(account: { mail: string; password: string }) {
     return this.http.post(BASE_URL + '/login', account, { headers: { noauth: 'noauth' } }).pipe(
       tap((res: any) => {
         localStorage.setItem('access_token', res.accessToken);
         localStorage.setItem('refresh_token', res.refreshToken);
-
-        const expiresAt = Date.now() + res.expiresIn * 1000;
-        localStorage.setItem('expires_at', expiresAt.toString());
         this.authState.next(true);
-        this.scheduleTokenExpiry(res.accessToken);
       }),
       catchError(err => throwError(() => err))
     );
   }
 
 
-    private scheduleTokenExpiry(token: string) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const exp = payload.exp * 1000;
-        const now = Date.now();
-        const timeout = exp - now;
-
-        if (timeout > 0) {
-          setTimeout(() => this.refreshToken().subscribe(), timeout);
-        } else {
-          this.logout();
-        }
-      } catch (e) {
-        console.error('Token invalid:', e);
-        this.logout();
-      }
-    }
 
 
 
@@ -85,7 +52,6 @@ export class AuthService {
     // Xóa token local
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    localStorage.removeItem('expires_at');
     this.authState.next(false);
   }
 
@@ -182,14 +148,7 @@ export class AuthService {
         tap((res: any) => {
           localStorage.setItem('access_token', res.accessToken);
           localStorage.setItem('refresh_token', res.refreshToken);
-
-          const expiresAt = Date.now() + res.expiresIn * 1000;
-          localStorage.setItem('expires_at', expiresAt.toString());
-
           this.authState.next(true);
-
-          // đặt lại hẹn giờ
-          this.scheduleTokenExpiry(res.accessToken);
         }),
         catchError(err => {
           this.logout();

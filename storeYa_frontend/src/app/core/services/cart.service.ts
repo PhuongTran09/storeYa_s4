@@ -23,15 +23,22 @@ export class CartService {
 
   constructor(private http: HttpClient) { }
 
-  /** Lấy giỏ hàng */
   loadCart() {
-    return this.http.get<{ items: CartItem[] }>(`${BASE_URL}`).pipe(
+    return this.http.get<{ items: any[] }>(`${BASE_URL}`).pipe(
       tap(res => {
-        this.cartItems = res?.items ?? [];
+        this.cartItems = (res?.items ?? []).map(item => ({
+          id: item.id,
+          name: item.productName,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image
+        }));
+
         this.cartSubject.next(this.cartItems);
       })
     );
   }
+
 
   /** Thêm item vào giỏ */
   addToCart(productId: number, quantity: number, name?: string) {
@@ -51,29 +58,37 @@ export class CartService {
 
   /** Update số lượng */
   updateQuantity(productId: number, quantity: number) {
-    let params = new HttpParams()
-      .set('productId', productId.toString())
-      .set('quantity', quantity.toString());
+    let params = new HttpParams().set('quantity', quantity.toString());
 
-    return this.http.put<{ items: CartItem[] }>(`${BASE_URL}/update`, null, { params }).pipe(
-      tap(res => {
-        this.cartItems = res?.items ?? [];
-        this.cartSubject.next(this.cartItems);
-      })
-    );
+    return this.http.put<{ items: CartItem[] }>(`${BASE_URL}/items/update/${productId}`, null, { params })
+      .pipe(
+        tap(res => {
+          this.cartItems = this.cartItems.map(item => {
+            const updated = res.items.find(i => i.id === item.id);
+            return updated ? { ...item, quantity: updated.quantity } : item;
+          });
+          this.cartSubject.next(this.cartItems);
+        })
+      );
   }
+
+
 
   /** Xoá item */
-  removeFromCart(productId: number) {
-    let params = new HttpParams().set('productId', productId.toString());
+  removeItem(productId: number) {
+    return this.http.delete<{ items: CartItem[] }>(`${BASE_URL}/items/${productId}`)
+      .pipe(
+        tap(res => {
+          this.cartItems = this.cartItems.map(item => {
+            const updated = res.items.find(i => i.id === item.id);
+            return updated ? { ...item, quantity: updated.quantity } : item;
+          });
+          this.cartSubject.next(this.cartItems);
+        })
 
-    return this.http.delete<{ items: CartItem[] }>(`${BASE_URL}/remove`, { params }).pipe(
-      tap(res => {
-        this.cartItems = res?.items ?? [];
-        this.cartSubject.next(this.cartItems);
-      })
-    );
+      );
   }
+
 
   /** Clear giỏ */
   clearCart() {

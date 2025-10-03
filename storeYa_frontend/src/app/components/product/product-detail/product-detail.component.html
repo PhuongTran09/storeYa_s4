@@ -1,89 +1,83 @@
 <app-header></app-header>
 
-<div class="container mx-auto py-8 px-8" *ngIf="product as p">
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-    <!-- Ảnh sản phẩm -->
-    <div class="lg:col-span-5 flex flex-col items-center rounded-lg shadow p-5 space-y-6">
-      <div class="border rounded-lg shadow overflow-hidden">
-        <img [src]="p.imageUrls?.[currentImage]" alt="Product image" class="max-w-full h-[350px] object-cover" />
+<div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8" *ngIf="product as p">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 bg-white rounded-xl border border-gray-100 overflow-hidden p-6 lg:p-10">
+    <div class="lg:col-span-5 flex flex-col items-center space-y-6">
+      <div class="w-full relative group rounded-xl overflow-hidden border border-gray-200 transition duration-300 ease-in-out transform hover:scale-[1.01]">
+        <img [src]="p.imageUrls?.[currentImage]" [alt]="p.name" class="w-full max-w-full h-96 object-cover" />
+        <div class="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition duration-300"></div>
       </div>
 
-      <!-- Thumbnail nhỏ -->
-      <div *ngIf="(p.imageUrls?.length ?? 0) > 1" class="flex gap-3 mt-4 rounded-lg overflow-x-auto">
+      <div *ngIf="(p.imageUrls?.length ?? 0) > 1" class="flex gap-4 p-2 rounded-lg bg-gray-50 overflow-x-auto w-full justify-center">
         <img *ngFor="let img of p.imageUrls; let i = index" [src]="img" (click)="currentImage = i"
-          class="w-16 h-16 object-cover rounded-md border cursor-pointer hover:border-blue-400"
-          [class.border-blue-500]="i === currentImage" />
-      </div>
+          class="w-16 h-16 object-cover rounded-lg border-2 cursor-pointer transition duration-300 transform hover:scale-105"
+          [class.border-sky-500]="i === currentImage"
+          [class.border-gray-200]="i !== currentImage" /> </div>
     </div>
-
-    <!-- Thông tin sản phẩm -->
-    <div class="lg:col-span-7 bg-white rounded-lg shadow p-6 space-y-6">
-      <!-- Tên + Badge -->
-      <div class="flex items-center gap-4">
-        <h1 class="text-2xl font-bold text-gray-800 flex-1">
+    
+    <div class="lg:col-span-7 space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4 border-b border-gray-100 pb-4">
+        <h1 class="text-3xl font-extrabold text-gray-900 flex-1">
           {{ p.name }}
         </h1>
 
-        <span class="px-3 py-1 text-xs font-bold rounded-full" [ngClass]="{
-    'bg-blue-600 text-gray-100': p.stock > 0,
-    'bg-red-600 text-white': p.stock === 0
-  }">
-          {{ p.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK' }}
+        <span class="px-3 py-1 text-sm font-semibold rounded-full uppercase tracking-wider transition duration-300" 
+          [ngClass]="{
+            'bg-green-50 text-green-700 border border-green-200': p.stock > 0,
+            'bg-red-50 text-red-700 border border-red-200': p.stock === 0
+          }">
+          {{ p.stock > 0 ? 'Còn Hàng' : 'Hết Hàng' }}
         </span>
-
       </div>
 
-
-
-      <!-- Giá -->
-      <div class="flex items-baseline gap-3">
-        <span class="text-3xl font-bold text-blue-500">
+      <div class="py-2">
+        <span class="text-4xl font-extrabold text-sky-500">
           {{ p.price |vnd }}
         </span>
+        <p class="text-sm text-gray-500 mt-1">Đã bao gồm VAT (nếu có)</p>
       </div>
 
+      <div>
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">Mô Tả Sản Phẩm</h2>
+        <p class="text-gray-600 leading-relaxed max-h-24 overflow-hidden text-ellipsis">
+          {{ p.description }}
+        </p>
+      </div>
+      
+      <div class="flex flex-col space-y-3">
+        <label class="text-base font-semibold text-gray-800">Chọn Số Lượng</label>
+        <div class="flex items-center space-x-2">
+          <button
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 bg-white text-xl font-bold text-gray-700 transition duration-200 hover:bg-sky-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="decreaseQty()" [disabled]="quantity <= 1">
+            –
+          </button>
 
-      <!-- Số lượng -->
-      <div class="flex items-center">
-        <!-- Nút trừ -->
-        <button
-          class="w-10 h-10 flex items-center justify-center rounded-md border bg-blue-200 text-lg font-bold hover:bg-gray-100 shadow-sm"
-          (click)="decreaseQty()">
-          –
-        </button>
+          <input type="number" [(ngModel)]="quantity" (keydown)="$event.preventDefault()"
+            class="w-20 h-10 text-center text-lg font-medium border border-gray-300 rounded-lg focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition duration-200" />
 
-        <!-- Ô số -->
-        <input type="number" [(ngModel)]="quantity" (keydown)="$event.preventDefault()"
-          class="w-16 h-10 mx-3 text-center border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
-        <!-- Nút cộng -->
-        <button
-          class="w-10 h-10 flex items-center justify-center rounded-md border bg-blue-200 text-lg font-bold hover:bg-gray-100 shadow-sm"
-          (click)="increaseQty()">
-          +
-        </button>
+          <button
+            class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 bg-white text-xl font-bold text-gray-700 transition duration-200 hover:bg-sky-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="increaseQty()" [disabled]="quantity >= p.stock && p.stock > 0">
+            +
+          </button>
+          <span *ngIf="p.stock > 0" class="text-sm text-gray-500 ml-4">
+            (Còn {{ p.stock }} sản phẩm)
+          </span>
+        </div>
       </div>
 
-
-
-
-
-
-      <!-- Action button -->
-      <div class="flex gap-4 pt-4">
-        <button class="flex-1 py-3 rounded-md font-bold bg-blue-100 text-black hover:bg-blue-300 shadow">
-          Buy Now
+      <div class="flex flex-col sm:flex-row gap-4 pt-6">
+        <button class="flex-1 py-3 rounded-lg font-bold text-lg border-2 border-sky-500 bg-white text-sky-500 
+                       transition duration-300 ease-in-out hover:bg-sky-50 focus:outline-none focus:ring-4 focus:ring-sky-200">
+          Mua Ngay
         </button>
         <button (click)="addToCart()"
-          class="flex-1 py-3 rounded-md font-bold bg-blue-500 text-white hover:bg-blue-700 shadow">
-          Add to Cart
+          class="flex-1 py-3 rounded-lg font-bold text-lg bg-sky-500 text-white 
+                 transition duration-300 ease-in-out hover:bg-sky-600 hover:scale-[1.02] transform focus:outline-none focus:ring-4 focus:ring-sky-200"
+          [disabled]="p.stock === 0">
+          Thêm vào Giỏ Hàng
         </button>
-      </div>
-      <div>
-        <label class="block text-sm font-semibold mb-2">Description</label>
-        <p class="text-sm text-gray-500 mb-2 h-10 overflow-hidden text-ellipsis">
-          {{ product.description }}
-        </p>
       </div>
 
     </div>

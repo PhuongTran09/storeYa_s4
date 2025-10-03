@@ -4,6 +4,7 @@ import com.storeya.shop.dto.CartDTO;
 import com.storeya.shop.dto.CartItemDTO;
 import com.storeya.shop.entity.Cart;
 import com.storeya.shop.entity.CartItem;
+import com.storeya.shop.entity.ProductImage;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,6 @@ public class CartMapper {
     public CartMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
 
-        // Cấu hình custom mapping cho CartItem
         modelMapper.typeMap(CartItem.class, CartItemDTO.class).addMappings(mapper -> {
             mapper.map(src -> src.getProduct().getId(), CartItemDTO::setProductId);
             mapper.map(src -> src.getProduct().getName(), CartItemDTO::setProductName);
@@ -27,15 +27,20 @@ public class CartMapper {
     public CartDTO toDTO(Cart cart) {
         CartDTO dto = modelMapper.map(cart, CartDTO.class);
 
-        // convert list items
         dto.setItems(cart.getItems().stream()
-                .map(item -> modelMapper.map(item, CartItemDTO.class))
+                .map(this::toItemDTO)
                 .collect(Collectors.toList()));
 
         return dto;
     }
 
     public CartItemDTO toItemDTO(CartItem item) {
-        return modelMapper.map(item, CartItemDTO.class);
+        CartItemDTO dto = modelMapper.map(item, CartItemDTO.class);
+
+        // map ảnh ở đây (chỉ khi có dữ liệu)
+        if (item.getProduct().getImages() != null && !item.getProduct().getImages().isEmpty()) {
+            dto.setImage(item.getProduct().getImages().get(0).getUrl());
+        }
+        return dto;
     }
 }

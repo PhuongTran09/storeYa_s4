@@ -1,97 +1,131 @@
 <app-header></app-header>
 
 
-<section class="relative bg-white border">
-  <div class="mx-auto px-6 grid grid-cols-1 md:grid-cols-2 items-center gap-8">
-    
-    <!-- Ảnh bên trái -->
-    <div class="flex justify-center">
+<section class="relative bg-white min-h-auto flex items-center border-b border-gray-100">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 items-center gap-10 py-10">
+
+    <div class="lg:col-span-6 order-2 lg:order-1 text-gray-800 p-4 animate-fade-in">
+      <p class="text-xl font-medium text-sky-500 mb-2 uppercase tracking-wide">Mô hình & Đồ sưu tầm</p>
+
+      <h1 class="text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 leading-tight">
+        <span class="text-sky-500">WELCOME</span> TO STORE YA
+      </h1>
+      <p class="text-xl text-gray-600 mb-10 max-w-lg">
+        Khám phá hàng trăm mô hình chất lượng với **giá tốt nhất** và dịch vụ chuyên nghiệp.
+      </p>
+      <button
+        class="px-10 py-4 bg-sky-500 text-white font-bold rounded-full text-lg 
+                       transition duration-300 transform hover:bg-sky-600 hover:scale-[1.05] shadow-xl focus:ring-4 focus:ring-sky-200">
+        Khám Phá Ngay
+      </button>
+    </div>
+
+    <div class="lg:col-span-6 order-1 lg:order-2 flex justify-center">
       <img src="assets/thum.png" alt="Banner"
-           class="w-full max-w-xl h-auto rounded-lg object-cover" />
+        class="w-full max-w-lg h-auto rounded-3xl object-cover border-4 border-sky-100 transition duration-500 transform hover:shadow-2xl hover:scale-[1.01]" />
     </div>
-    
-    <!-- Nội dung bên phải -->
-    <div class="order-2 md:order-2 text-gray-800 mb-10">
-      <h1 class="text-4xl font-extrabold mb-4">WELCOME TO STORE YA</h1>
-      <p class="text-lg mb-6">Khám phá hàng trăm mô hình chất lượng với giá tốt nhất.</p>
-    </div>
-    
+
   </div>
 </section>
 
 
+<div class="max-w-7xl mx-auto px-4 mb-16 pt-12">
+  <div class="text-center mb-10">
+    <span class="text-sm font-semibold text-sky-500 uppercase tracking-widest">SẢN PHẨM</span>
+    <h2 class="text-3xl font-bold text-gray-800 mt-1">ĐƯỢC YÊU THÍCH NHẤT</h2>
+    <div class="w-16 h-1 bg-sky-500 mx-auto mt-3 rounded-full"></div>
+  </div>
 
-
-
-<!-- Product Grid -->
-<div class="max-w-6xl mx-auto px-4 mb-12 mt-6">
-  <h2 class="text-2xl font-bold text-white-800 mb-6 text-center">PRODUCTS</h2>
-
-  <!-- scroll ngang -->
-  <div class="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-custom">
+  <div class="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 custom-scrollbar p-2">
     <product-card *ngFor="let product of products" [product]="product"
-      class=" max-w-[350px] mt-2 flex-shrink-0 snap-start">
+      class="flex-shrink-0 snap-start transition duration-300 transform">
     </product-card>
   </div>
 
-  <p *ngIf="products?.length === 0" class="text-white-500 mt-4 text-center">
-    No products available.
+  <p *ngIf="products?.length === 0" class="text-gray-500 mt-8 text-center">
+    Hiện chưa có sản phẩm nào.
   </p>
 </div>
 
-<!-- Categories / Info section -->
-<section class="max-w-7xl mx-auto px-6 mb-12">
-   <h2 class="text-2xl font-bold text-white-800 mb-6 text-center">WE ARE COMMITTED</h2>
+<section class="max-w-7xl mx-auto px-6 mb-16 pt-8">
+  <h2 class="text-3xl font-bold text-gray-800 mb-10 text-center">CAM KẾT CỦA CHÚNG TÔI</h2>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div class="p-6 bg-white rounded-xl shadow ">
-      <i class="fa-solid fa-truck-fast text-blue-600 text-3xl mb-4"></i>
-      <h3 class="font-semibold text-lg">Fast Delivery</h3>
-      <p class="text-gray-600 text-sm mt-2">Giao hàng nhanh chóng toàn quốc.</p>
+
+    <div
+      class="p-8 bg-white rounded-xl border border-gray-100 transition duration-300 transform hover:bg-sky-50 hover:border-sky-300 hover:translate-y-[-5px]">
+      <div class="mb-4 w-12 h-12 flex items-center justify-center rounded-full bg-sky-100">
+        <i class="fa-solid fa-truck-fast text-sky-500 text-xl"></i>
+      </div>
+      <h3 class="font-bold text-xl text-gray-900">Giao Hàng Nhanh</h3>
+      <p class="text-gray-600 text-sm mt-2">Đảm bảo giao hàng nhanh chóng toàn quốc.</p>
     </div>
-    <div class="p-6 bg-white rounded-xl shadow ">
-      <i class="fa-solid fa-shield-halved text-blue-600 text-3xl mb-4"></i>
-      <h3 class="font-semibold text-lg">Secure Payment</h3>
+
+    <div
+      class="p-8 bg-white rounded-xl border border-gray-100 transition duration-300 transform hover:bg-sky-50 hover:border-sky-300 hover:translate-y-[-5px]">
+      <div class="mb-4 w-12 h-12 flex items-center justify-center rounded-full bg-sky-100">
+        <i class="fa-solid fa-shield-halved text-sky-500 text-xl"></i>
+      </div>
+      <h3 class="font-bold text-xl text-gray-900">Thanh Toán An Toàn</h3>
       <p class="text-gray-600 text-sm mt-2">Thanh toán an toàn, bảo mật tuyệt đối.</p>
     </div>
-    <div class="p-6 bg-white rounded-xl shadow ">
-      <i class="fa-solid fa-star text-blue-600 text-3xl mb-4"></i>
-      <h3 class="font-semibold text-lg">Top Quality</h3>
-      <p class="text-gray-600 text-sm mt-2">Sản phẩm chất lượng, được chọn lọc kỹ.</p>
+
+    <div
+      class="p-8 bg-white rounded-xl border border-gray-100 transition duration-300 transform hover:bg-sky-50 hover:border-sky-300 hover:translate-y-[-5px]">
+      <div class="mb-4 w-12 h-12 flex items-center justify-center rounded-full bg-sky-100">
+        <i class="fa-solid fa-star text-sky-500 text-xl"></i>
+      </div>
+      <h3 class="font-bold text-xl text-gray-900">Chất Lượng Hàng Đầu</h3>
+      <p class="text-gray-600 text-sm mt-2">Sản phẩm chất lượng, được chọn lọc kỹ lưỡng.</p>
     </div>
-    <div class="p-6 bg-white rounded-xl shadow ">
-      <i class="fa-solid fa-headset text-blue-600 text-3xl mb-4"></i>
-      <h3 class="font-semibold text-lg">Support 24/7</h3>
-      <p class="text-gray-600 text-sm mt-2">Hỗ trợ khách hàng 24/7 nhiệt tình.</p>
+
+    <div
+      class="p-8 bg-white rounded-xl border border-gray-100 transition duration-300 transform hover:bg-sky-50 hover:border-sky-300 hover:translate-y-[-5px]">
+      <div class="mb-4 w-12 h-12 flex items-center justify-center rounded-full bg-sky-100">
+        <i class="fa-solid fa-headset text-sky-500 text-xl"></i>
+      </div>
+      <h3 class="font-bold text-xl text-gray-900">Hỗ Trợ 24/7</h3>
+      <p class="text-gray-600 text-sm mt-2">Đội ngũ hỗ trợ khách hàng nhiệt tình 24/7.</p>
     </div>
   </div>
 </section>
 
+---
 
-<!-- Footer -->
-<footer class="bg-blue-600 text-gray-300 py-8 mt-12 ">
-  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-    <div>
-      <h3 class="text-lg font-bold mb-3 text-white">About Us</h3>
-      <p class="text-sm">Chúng tôi mang đến cho bạn trải nghiệm mua sắm online đơn giản, nhanh chóng và an toàn.</p>
-    </div>
-    <div>
-      <h3 class="text-lg font-bold mb-3 text-white">Quick Links</h3>
-      <ul class="space-y-2 text-sm">
-        <li><a href="#" class="hover:underline">Home</a></li>
-        <li><a href="#" class="hover:underline">Shop</a></li>
-        <li><a href="#" class="hover:underline">Contact</a></li>
-      </ul>
-    </div>
-    <div>
-      <h3 class="text-lg font-bold mb-3 text-white">Follow Us</h3>
-      <div class="flex space-x-4 text-xl">
-        <a href="#"><i class="fa-brands fa-facebook"></i></a>
-        <a href="#"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+<footer class="bg-gray-900 text-gray-300 py-10 ">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+
+    <div class="col-span-2 lg:col-span-2">
+      <h3 class="text-2xl font-extrabold mb-3 text-white">STORE YA</h3>
+      <p class="text-sm max-w-xs">Chúng tôi mang đến cho bạn trải nghiệm mua sắm online đơn giản, nhanh chóng và an
+        toàn.</p>
+      <div class="flex space-x-4 text-xl mt-4 text-sky-300">
+        <a href="#" class="hover:text-white transition duration-200"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#" class="hover:text-white transition duration-200"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" class="hover:text-white transition duration-200"><i class="fa-brands fa-twitter"></i></a>
       </div>
     </div>
+
+    <div>
+      <h3 class="text-lg font-bold mb-4 text-white">Liên Kết Nhanh</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#" class="hover:text-sky-300 transition duration-200">Trang Chủ</a></li>
+        <li><a href="#" class="hover:text-sky-300 transition duration-200">Sản Phẩm</a></li>
+        <li><a href="#" class="hover:text-sky-300 transition duration-200">Về Chúng Tôi</a></li>
+        <li><a href="#" class="hover:text-sky-300 transition duration-200">Liên Hệ</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-bold mb-4 text-white">Chính Sách</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#" class="hover:text-sky-300 transition duration-200">Chính sách bảo mật</a></li>
+        <li><a href="#" class="hover:text-sky-300 transition duration-200">Điều khoản dịch vụ</a></li>
+        <li><a href="#" class="hover:text-sky-300 transition duration-200">Chính sách đổi trả</a></li>
+      </ul>
+    </div>
+
   </div>
-  <div class="text-center text-white text-sm mt-8 border-t border-white-700 pt-4">
-    © 2025 My StoreYa. All rights reserved.
+  <div class="text-center text-gray-400 text-sm mt-12 border-t border-gray-700 pt-6">
+    © 2025 Store YA. All rights reserved.
   </div>
 </footer>

@@ -101,23 +101,41 @@ public class CartService implements ICartService {
     @Transactional
     public Cart updateItem(Long userId, Long productId, int quantity) {
         Cart cart = getOrCreateCart(userId);
+
+        // Tìm CartItem, nếu không có thì tạo mới
         CartItem item = cart.getItems().stream()
-                .filter(i -> i.getProduct().getId().equals(productId))
+                .filter(i -> i.getId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item not found in cart"));
+                .orElseGet(() -> {
+                    CartItem newItem = new CartItem();
+                    Product product = productRepository.findById(productId)
+                            .orElseThrow(() -> new RuntimeException("Product not found"));
+                    newItem.setProduct(product);
+                    newItem.setQuantity(0);
+                    newItem.setPrice(0.0);
+                    newItem.setCart(cart);
+                    cart.getItems().add(newItem);
+                    return newItem;
+                });
 
         Product product = item.getProduct();
+
+        // Hoàn trả stock cũ trước khi cập nhật
         product.setStock(product.getStock() + item.getQuantity());
 
         if (quantity <= 0) {
+            // Xóa item khỏi cart, không xóa product
             cart.getItems().remove(item);
             cartItemRepository.delete(item);
         } else {
             if (product.getStock() < quantity)
                 throw new RuntimeException("Not enough stock for product: " + product.getName());
+
             item.setQuantity(quantity);
             item.setPrice(product.getPrice() * quantity);
+
             cartItemRepository.save(item);
+
             product.setStock(product.getStock() - quantity);
         }
 
@@ -126,25 +144,36 @@ public class CartService implements ICartService {
         return cartRepository.save(cart);
     }
 
+
     @Override
     @Transactional
     public Cart removeItem(Long userId, Long productId) {
         Cart cart = getOrCreateCart(userId);
-        CartItem item = cart.getItems().stream()
-                .filter(i -> i.getProduct().getId().equals(productId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item not found in cart"));
 
+        Optional<CartItem> optionalItem = cart.getItems().stream()
+                .filter(i -> i.getId().equals(productId))
+                .findFirst();
+
+        if (optionalItem.isEmpty()) {
+            // item đã bị xóa trước đó → không crash, chỉ return cart hiện tại
+            return cart;
+        }
+
+        CartItem item = optionalItem.get();
         Product product = item.getProduct();
+
+        // Trả stock về product
         product.setStock(product.getStock() + item.getQuantity());
         productRepository.save(product);
 
+        // Xóa CartItem
         cart.getItems().remove(item);
         cartItemRepository.delete(item);
 
         updateCartTotal(cart);
         return cartRepository.save(cart);
     }
+
 
     @Override
     @Transactional

@@ -4,6 +4,8 @@ import com.storeya.shop.entity.Product;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 public class CartItemDTO {
@@ -12,4 +14,6 @@ public class CartItemDTO {
     private String productName;
     private Integer quantity;
     private Double price;
+    private String image;
+
 }

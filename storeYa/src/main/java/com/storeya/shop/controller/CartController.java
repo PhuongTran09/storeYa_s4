@@ -44,7 +44,7 @@ public class CartController {
         return ResponseEntity.ok(cartMapper.toDTO(cart));
     }
 
-    @PutMapping("/items/{productId}")
+    @PutMapping("/items/update/{productId}")
     public ResponseEntity<CartDTO> updateItem(@AuthenticationPrincipal Jwt principal,
                                               @PathVariable Long productId,
                                               @RequestParam int quantity) {
