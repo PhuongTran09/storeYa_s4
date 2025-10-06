@@ -12,22 +12,22 @@ import { HeaderComponent } from '../../../shared/layout/navbar/navbar.component'
   styleUrls: ['./cart-list.component.scss'],
   standalone: true,
   imports: [CommonModule, CartItemComponent, VndPipe, HeaderComponent],
-  
 })
-export class CartListComponent implements OnInit {
+export class CartListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   cartItems: CartItem[] = [];
   total = 0;
-  private userId?: number;
 
   constructor(private cartService: CartService) { }
 
   ngOnInit() {
+    // Load cart từ backend
     this.cartService.loadCart().subscribe({
-      next: () => console.log('Cart loaded'),
-      error: err => console.error('Load cart failed', err)
+      next: () => console.log('🛒 Cart loaded successfully'),
+      error: err => console.error('❌ Load cart failed:', err)
     });
 
+    // Theo dõi thay đổi giỏ hàng
     this.cartService.cart$
       .pipe(takeUntil(this.destroy$))
       .subscribe(items => {
@@ -35,27 +35,36 @@ export class CartListComponent implements OnInit {
         this.total = this.cartService.getTotal();
       });
   }
-  removeItem(productId: number) {
-    this.cartService.removeItem(productId).subscribe({
-      next: cart => {
-        // cartService sẽ emit cart$. Cập nhật cartItems ở đây optional
-        this.cartItems = cart?.items ?? [];
-        this.total = this.cartService.getTotal();
+
+  updateQuantity(event: { id: number; qty: number }) {
+    const sub = this.cartService.updateQuantity(event.id, event.qty).subscribe({
+      next: () => {
+        console.log(`🔄 Updated quantity for item ${event.id}`);
+        sub.unsubscribe();
       },
-      error: err => console.error('Failed to remove item', err)
+      error: err => {
+        console.error('❌ Update quantity failed:', err);
+        sub.unsubscribe();
+      }
     });
   }
 
-
-
-  updateQuantity(event: { id: number; qty: number }) {
-    this.cartService.updateQuantity(event.id, event.qty).subscribe();
+  removeItem(itemId: number) {
+    this.cartService.removeItem(itemId).subscribe();
   }
+  
 
   checkout() {
     if (this.total === 0) return;
-    alert(`Thanh toán tổng: $${this.total}`);
-    this.cartService.clearCart().subscribe();
+    alert(`Thanh toán tổng cộng: ${this.total.toLocaleString('vi-VN')} VND`);
+    this.cartService.clearCart().subscribe({
+      next: () => console.log('✅ Cart cleared'),
+      error: err => console.error('❌ Clear cart failed:', err)
+    });
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

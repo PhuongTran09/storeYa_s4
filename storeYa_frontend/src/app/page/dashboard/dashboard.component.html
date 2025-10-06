@@ -1,12 +1,16 @@
-<!-- Layout chính -->
-<section class="scrollbar-hide h-screen overflow-hidden">
+<section class="min-h-screen bg-gray-50 flex flex-col">
+
    <app-navbar-admin></app-navbar-admin>
-   <section class="flex">
-      <app-sidebar-admin (viewChange)="show($event)"></app-sidebar-admin>
-      <!-- Content -->
-      <section class="bg-gray-50 w-full overflow-auto h-screen scrollbar-hide">
+
+   <div class="flex flex-1 overflow-hidden">
+
+      <app-sidebar-admin (viewChange)="show($event)"
+         class="w-60 bg-white border-r border-gray-100 flex-shrink-0 overflow-y-auto"></app-sidebar-admin>
+
+      <main class="flex-1 overflow-y-auto p-4 md:p-8">
          <app-product-list *ngIf="currentView === 'products'"></app-product-list>
          <app-category-list *ngIf="currentView === 'categories'"></app-category-list>
-      </section>
-   </section>
+      </main>
+
+   </div>
 </section>

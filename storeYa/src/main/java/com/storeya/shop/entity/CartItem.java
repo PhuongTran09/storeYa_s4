@@ -1,5 +1,7 @@
 package com.storeya.shop.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,18 +16,16 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Mỗi item thuộc 1 cart
-    @ManyToOne
-    @JoinColumn(name = "cart_id", nullable = false)
+    private Integer quantity;
+    private Double price;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id")
+    @JsonBackReference
     private Cart cart;
 
-    // Tham chiếu tới product
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    @JsonIgnoreProperties({"category", "hibernateLazyInitializer", "handler"})
     private Product product;
-
-    private Integer quantity;
-
-    // tổng giá trị cho item (price * quantity)
-    private Double price;
 }

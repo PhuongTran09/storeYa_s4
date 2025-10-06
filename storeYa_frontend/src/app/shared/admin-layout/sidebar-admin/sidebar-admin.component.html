@@ -1,30 +1,65 @@
-<aside class="px-2 left-0 h-screen w-fit bg-white border-r shadow-md z-20">
-  <nav class="p-4 space-y-2">
-    <button (click)="selectView('products')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
-             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'products'"
-      [class.text-white]="selectedView === 'products'">
-      <i class="fa-solid fa-shirt"></i> Products
-    </button>
+<aside class="fixed left-0 top-0 h-screen w-60 bg-white border-r border-gray-100 shadow-xl z-30 flex flex-col">
+    
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h1 class="text-xl font-extrabold text-sky-500">ADMIN PANEL</h1>
+    </div>
 
-    <button (click)="selectView('categories')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
-             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'categories'"
-      [class.text-white]="selectedView === 'categories'">
-      <i class="fa-solid fa-palette"></i> Categories
-    </button>
+    <nav class="p-4 flex-1 overflow-y-auto space-y-2">
+        
+        <button (click)="selectView('products')" 
+                class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left 
+                       text-gray-700 font-medium transition duration-200"
+                [ngClass]="{
+                    'bg-sky-500 text-white shadow-md hover:bg-sky-600': selectedView === 'products',
+                    'hover:bg-gray-100': selectedView !== 'products'
+                }">
+            <i class="fa-solid fa-shirt text-lg"></i>
+            <span>Sản phẩm</span>
+        </button>
 
+        <button (click)="selectView('categories')" 
+                class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left 
+                       text-gray-700 font-medium transition duration-200"
+                [ngClass]="{
+                    'bg-sky-500 text-white shadow-md hover:bg-sky-600': selectedView === 'categories',
+                    'hover:bg-gray-100': selectedView !== 'categories'
+                }">
+            <i class="fa-solid fa-palette text-lg"></i>
+            <span>Danh mục</span>
+        </button>
 
-    <button (click)="selectView('exports')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
-             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'exports'"
-      [class.text-white]="selectedView === 'exports'">
-      <i class="fa-solid fa-file-export"></i> Exports
-    </button>
+        <button (click)="selectView('orders')" 
+                class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left 
+                       text-gray-700 font-medium transition duration-200"
+                [ngClass]="{
+                    'bg-sky-500 text-white shadow-md hover:bg-sky-600': selectedView === 'orders',
+                    'hover:bg-gray-100': selectedView !== 'orders'
+                }">
+            <i class="fa-solid fa-box-open text-lg"></i>
+            <span>Đơn hàng</span>
+        </button>
+        
+        <hr class="border-t border-gray-100 my-4" /> <button (click)="selectView('exports')" 
+                class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left 
+                       text-gray-700 font-medium transition duration-200"
+                [ngClass]="{
+                    'bg-sky-500 text-white shadow-md hover:bg-sky-600': selectedView === 'exports',
+                    'hover:bg-gray-100': selectedView !== 'exports'
+                }">
+            <i class="fa-solid fa-file-export text-lg"></i>
+            <span>Xuất báo cáo</span>
+        </button>
 
-    <button (click)="selectView('settings')" class="flex items-center gap-2 px-3 py-2 rounded-md w-full text-left
-             transition-colors duration-200 hover:bg-gray-300" [class.bg-blue-500]="selectedView === 'settings'"
-      [class.text-white]="selectedView === 'settings'">
-      <i class="fa-solid fa-gear"></i> Settings
-    </button>
+        <button (click)="selectView('settings')" 
+                class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left 
+                       text-gray-700 font-medium transition duration-200"
+                [ngClass]="{
+                    'bg-sky-500 text-white shadow-md hover:bg-sky-600': selectedView === 'settings',
+                    'hover:bg-gray-100': selectedView !== 'settings'
+                }">
+            <i class="fa-solid fa-gear text-lg"></i>
+            <span>Cài đặt</span>
+        </button>
 
-
-  </nav>
+    </nav>
 </aside>

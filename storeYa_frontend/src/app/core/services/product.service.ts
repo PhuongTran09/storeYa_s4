@@ -40,13 +40,23 @@ export class ProductService {
   updateProduct(id: number, product: Partial<Product>): Observable<Product> {
     return this.http.put<Product>(`${BASE_URL}/${id}`, product);
   }
-  
+
   deleteCloudinaryFile(url: string) {
-  return this.http.post(`${BASE_URL}/cloudinary/delete`, { url });
+    return this.http.post(`${BASE_URL}/cloudinary/delete`, { url });
 
 
   }
-    getProductById(id: number): Observable<Product> {
+  getProductById(id: number): Observable<Product> {
     return this.http.get<Product>(`${BASE_URL}/public/${id}`);
   }
+
+  getProductsByCategory(categoryId?: number) {
+    let url = `${BASE_URL}/products`;
+    if (categoryId) {
+      url += `?categoryId=${categoryId}`;
+    }
+    return this.http.get<Product[]>(url);
+  }
+
+
 }

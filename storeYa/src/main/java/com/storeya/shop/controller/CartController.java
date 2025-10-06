@@ -53,13 +53,14 @@ public class CartController {
         return ResponseEntity.ok(cartMapper.toDTO(cart));
     }
 
-    @DeleteMapping("/items/{productId}")
-    public ResponseEntity<CartDTO> removeItem(@AuthenticationPrincipal Jwt principal,
-                                              @PathVariable Long productId) {
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<Cart> removeItem(@AuthenticationPrincipal Jwt principal,
+                                           @PathVariable Long itemId) {
         Long userId = getUserId(principal);
-        Cart cart = cartService.removeItem(userId, productId);
-        return ResponseEntity.ok(cartMapper.toDTO(cart));
+        Cart updatedCart = cartService.removeItem(userId, itemId);
+        return ResponseEntity.ok(updatedCart);
     }
+
 
     @DeleteMapping
     public ResponseEntity<Void> clearCart(@AuthenticationPrincipal Jwt principal) {

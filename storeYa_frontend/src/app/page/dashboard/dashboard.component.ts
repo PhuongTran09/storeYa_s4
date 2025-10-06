@@ -16,9 +16,9 @@ import { ToastComponent } from '../../shared/toast/toast.component';
 })
 export class DashboardComponent {
   // Giá trị mặc định có thể rỗng hoặc 'products'
-  currentView: 'products' | 'categories' | 'settings' | 'exports' | null = null;
+  currentView: 'products' | 'categories' | 'settings' | 'exports' | 'orders' | null = null;
 
-  show(view: 'products' | 'categories' | 'settings' | 'exports') {
+  show(view: 'products' | 'categories' | 'settings' | 'exports' | 'orders') {
     this.currentView = view;
   }
 }

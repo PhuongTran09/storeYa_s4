@@ -1,61 +1,65 @@
-<div class="flex justify-center items-center p-6 px-6">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="bg-white py-4  rounded-xl  w-full max-w-[400px]">
-    <!-- Title -->
-    <h2 class="mb-6 text-center font-bold text-2xl text-blue-600">
-      LOGIN
-    </h2>
-
-    <!-- Username -->
-    <div class="mb-4">
-      <div class="flex flex-col" [ngClass]="{
-          'border-red-500':
-            loginForm.get('mail')?.touched && loginForm.get('mail')?.invalid
-        }">
-        <input id="mail" type="text" formControlName="mail" placeholder="Email"
-          class="px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition" />
+<div class="flex justify-center items-center p-6 sm:p-8">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" 
+        class="bg-white p-6 w-full max-w-md rounded-2xl border border-gray-100 ">
+    
+    <div class="text-center mb-8">
+      <div class="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-full bg-sky-100">
+        <i class="fa-solid fa-user text-xl text-sky-500"></i>
       </div>
+      <h2 class="font-extrabold text-3xl text-gray-900">
+        Đăng Nhập
+      </h2>
+      <p class="text-sm text-gray-500 mt-1">Sử dụng tài khoản email của bạn</p>
     </div>
 
-    <!-- Password -->
-    <div class="mb-4">
-      <div class="relative" [ngClass]="{
-          'border-red-500':
-            loginForm.get('password')?.touched &&
-            loginForm.get('password')?.invalid
-        }">
-        <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
-          placeholder="Password" (focus)="passwordFocused = true" (blur)="passwordFocused = false"
-          class="px-4 py-3 w-full border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition pr-10" />
+    <div class="mb-5">
+      <div class="relative">
+        <input id="mail" type="text" formControlName="mail" placeholder="Địa chỉ Email"
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition duration-200"
+          [class.border-red-500]="loginForm.get('mail')?.touched && loginForm.get('mail')?.invalid" />
+        <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      </div>
+      <p *ngIf="loginForm.get('mail')?.touched && loginForm.get('mail')?.invalid" class="text-red-500 text-xs mt-1 pl-1">
+        Email không hợp lệ.
+      </p>
+    </div>
 
-        <!-- Toggle password -->
-        <span class="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400"
+    <div class="mb-2">
+      <div class="relative">
+        <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
+          placeholder="Mật khẩu" (focus)="passwordFocused = true" (blur)="passwordFocused = false"
+          class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition duration-200" 
+          [class.border-red-500]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" />
+        
+        <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
+        <span class="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-sky-500 transition"
           *ngIf="passwordFocused || loginForm.get('password')?.value" (click)="togglePasswordVisibility()">
           <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
         </span>
       </div>
-
-      <!-- Forgot password -->
-      <div class="text-right mt-1 pr-2 text-xs">
-        <a (click)="openForgotPassword()" class="text-blue-600 hover:underline cursor-pointer">Forgot password?</a>
+      
+      <div class="text-right mt-2">
+        <a (click)="openForgotPassword()" class="text-sm text-sky-500 font-medium hover:text-sky-600 hover:underline cursor-pointer transition">
+          Quên mật khẩu?
+        </a>
       </div>
     </div>
-
-    <!-- Error -->
-    <div *ngIf="showLoginError" class="text-red-500 text-sm pl-2 mt-2 animate-fadeIn">
+    
+    <div *ngIf="showLoginError" class="text-red-500 text-sm text-center bg-red-50 border border-red-200 py-2 rounded-lg my-4 animate-fadeIn">
       Tài khoản hoặc mật khẩu không chính xác.
     </div>
 
-    <!-- Submit -->
     <button type="submit" [disabled]="loginForm.invalid"
-      class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg mt-3 transition hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
-      Login
+      class="w-full py-3 bg-sky-500 text-white font-extrabold text-lg rounded-lg mt-5 transition duration-300 hover:bg-sky-600 
+             disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed transform hover:scale-[1.01]">
+      ĐĂNG NHẬP
     </button>
 
-    <!-- Register -->
-    <div class="mt-4 text-center text-sm">
+    <div class="mt-6 text-center text-sm text-gray-600">
       <p>
-        Don't have an account?
-        <a (click)="openRegister()" class="text-blue-600 hover:underline cursor-pointer">Register</a>
+        Bạn chưa có tài khoản? 
+        <a (click)="openRegister()" class="text-sky-500 font-bold hover:underline cursor-pointer transition">Đăng ký ngay</a>
       </p>
     </div>
   </form>

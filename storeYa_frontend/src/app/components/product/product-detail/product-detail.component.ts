@@ -100,8 +100,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     // ⚠️ Không cần userId nữa vì BE tự lấy từ token
     this.cartService.addToCart(
       this.product.id ?? 0,      // productId (number)
-      this.quantity,
-      this.product.name          // optional name
+      this.quantity,    // optional name
     ).subscribe(() => {
       alert('🛒 Đã thêm sản phẩm vào giỏ!');
     });

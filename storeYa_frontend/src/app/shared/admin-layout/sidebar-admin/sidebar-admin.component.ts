@@ -10,11 +10,11 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./sidebar-admin.component.scss']
 })
 export class SidebarAdminComponent {
-  selectedView: 'products' | 'categories' | 'settings' | 'exports' | null = null;
+  selectedView: 'products' | 'categories' | 'settings' | 'exports' | 'orders' | null = null;
 
-  @Output() viewChange = new EventEmitter<'products' | 'categories' | 'settings' | 'exports'>();
+  @Output() viewChange = new EventEmitter<'products' | 'categories' | 'settings' | 'exports' | 'orders'>();
 
-  selectView(view: 'products' | 'categories' | 'settings' | 'exports') {
+  selectView(view: 'products' | 'categories' | 'settings' | 'exports' | 'orders') {
     this.selectedView = view;
     this.viewChange.emit(view);
   }

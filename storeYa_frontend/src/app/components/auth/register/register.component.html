@@ -1,77 +1,96 @@
-<div class="flex justify-center items-center p-6 px-6">
+<div class="flex justify-center items-center p-6 sm:p-8">
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()"
-    class="bg-white py-4 rounded-xl w-full max-w-[400px]">
-    <!-- Title -->
-    <h2 class="mb-6 text-center font-bold text-2xl text-blue-600">
-      REGISTER
-    </h2>
-
-    <!-- Username -->
-    <div class="mb-4">
-      <div class="text-red-500 text-xs" *ngIf="errorMessages['username']">
-        {{ errorMessages['username'] }}
+    class="bg-white p-6 w-full max-w-md rounded-2xl border border-gray-100 ">
+    
+    <div class="text-center mb-8">
+      <div class="w-12 h-12 mx-auto mb-3 flex items-center justify-center rounded-full bg-sky-100">
+        <i class="fa-solid fa-user-plus text-xl text-sky-500"></i>
       </div>
-      <input id="username" type="text" formControlName="username" placeholder="Username"
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition"
-        [ngClass]="{ 'border-red-500': registerForm.get('username')?.touched && registerForm.get('username')?.invalid }" />
+      <h2 class="font-extrabold text-3xl text-gray-900">
+        Đăng Ký Tài Khoản
+      </h2>
+      <p class="text-sm text-gray-500 mt-1">Tạo tài khoản mới nhanh chóng</p>
     </div>
 
-    <!-- Email -->
-    <div class="mb-4">
-      <div class="text-red-500 text-xs" *ngIf="errorMessages['email']">
-        {{ errorMessages['email'] }}
+    <div class="mb-5">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="relative">
+          <input id="firstName" type="text" formControlName="firstName" placeholder="Tên"
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition duration-200"
+            [ngClass]="{ 'border-red-500': registerForm.get('firstName')?.touched && registerForm.get('firstName')?.invalid }" />
+          <i class="fa-solid fa-file-signature absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        <div class="relative">
+          <input id="lastName" type="text" formControlName="lastName" placeholder="Họ"
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition duration-200"
+            [ngClass]="{ 'border-red-500': registerForm.get('lastName')?.touched && registerForm.get('lastName')?.invalid }" />
+           <i class="fa-solid fa-file-signature absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
       </div>
-      <input id="email" type="email" formControlName="email" placeholder="Email"
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition"
-        [ngClass]="{ 'border-red-500': registerForm.get('email')?.touched && registerForm.get('email')?.invalid }" />
-    </div>
-
-    <!-- First + Last Name -->
-    <div class="mb-4">
-      <div class="text-red-500 text-xs" *ngIf="errorMessages['firstName'] || errorMessages['lastName']">
+      <div class="text-red-500 text-xs mt-1 pl-1" *ngIf="errorMessages['firstName'] || errorMessages['lastName']">
         {{ errorMessages['firstName'] || errorMessages['lastName'] }}
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        <input id="firstName" type="text" formControlName="firstName" placeholder="First Name"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition" />
-        <input id="lastName" type="text" formControlName="lastName" placeholder="Last Name"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition" />
+    </div>
+
+    <div class="mb-5">
+      <div class="relative">
+        <input id="email" type="email" formControlName="email" placeholder="Địa chỉ Email"
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition duration-200"
+          [ngClass]="{ 'border-red-500': registerForm.get('email')?.touched && registerForm.get('email')?.invalid }" />
+        <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      </div>
+      <div class="text-red-500 text-xs mt-1 pl-1" *ngIf="errorMessages['email']">
+        {{ errorMessages['email'] }}
+      </div>
+    </div>
+    
+    <div class="mb-5">
+      <div class="relative">
+        <input id="username" type="text" formControlName="username" placeholder="Tên đăng nhập"
+          class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition duration-200"
+          [ngClass]="{ 'border-red-500': registerForm.get('username')?.touched && registerForm.get('username')?.invalid }" />
+        <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      </div>
+      <div class="text-red-500 text-xs mt-1 pl-1" *ngIf="errorMessages['username']">
+        {{ errorMessages['username'] }}
       </div>
     </div>
 
-    <!-- Password -->
-    <div class="mb-4 relative">
-      <div class="text-red-500 text-xs" *ngIf="errorMessages['password']">
+    <div class="mb-5 relative">
+      <div class="relative">
+        <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Mật khẩu"
+          (focus)="passwordFocused = true" (blur)="passwordFocused = false"
+          class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition duration-200"
+          [ngClass]="{ 'border-red-500': registerForm.get('password')?.touched && registerForm.get('password')?.invalid }" />
+        
+        <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        
+        <span *ngIf="passwordFocused || registerForm.get('password')?.value" (click)="togglePasswordVisibility()"
+          class="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-sky-500 transition">
+          <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+        </span>
+      </div>
+      <div class="text-red-500 text-xs mt-1 pl-1" *ngIf="errorMessages['password']">
         {{ errorMessages['password'] }}
       </div>
-      <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="Password"
-        (focus)="passwordFocused = true" (blur)="passwordFocused = false"
-        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-600 focus:outline-none transition pr-10" />
-      <span *ngIf="passwordFocused || registerForm.get('password')?.value" (click)="togglePasswordVisibility()"
-        class="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-blue-600">
-        <i class="fa" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
-      </span>
     </div>
 
-    <!-- Notify -->
-    <div *ngIf="notifyMessage" class="text-xs mt-0 mb-2 animate-fadeIn"
-      [class.text-green-500]="notifyType === 'success'" [class.text-red-500]="notifyType === 'error'">
+    <div *ngIf="notifyMessage" class="text-sm text-center py-2 rounded-lg my-4 animate-fadeIn"
+      [class.text-green-700]="notifyType === 'success'" [class.bg-green-50]="notifyType === 'success'"
+      [class.text-red-700]="notifyType === 'error'" [class.bg-red-50]="notifyType === 'error'">
       {{ notifyMessage }}
     </div>
 
-    <!-- Submit -->
     <button type="submit" [disabled]="registerForm.invalid"
-      class="w-full py-3 rounded-lg font-bold text-white bg-blue-600 hover:bg-blue-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
-      Register
+      class="w-full py-3 bg-sky-500 text-white font-extrabold text-lg rounded-lg mt-5 transition duration-300 hover:bg-sky-600 
+             disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed transform hover:scale-[1.01]">
+      ĐĂNG KÝ
     </button>
 
-    <!-- Link -->
-    <div class="mt-4 text-center text-sm">
+    <div class="mt-6 text-center text-sm text-gray-600">
       <p>
-        Have an account?
-        <a (click)="openLogin()" class="text-blue-600 hover:underline cursor-pointer">
-          Login
-        </a>
+        Bạn đã có tài khoản? 
+        <a (click)="openLogin()" class="text-sky-500 font-bold hover:underline cursor-pointer transition">Đăng nhập ngay</a>
       </p>
     </div>
   </form>
