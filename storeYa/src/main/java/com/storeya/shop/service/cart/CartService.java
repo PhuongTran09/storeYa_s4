@@ -41,7 +41,6 @@ public class CartService implements ICartService {
         });
     }
 
-    // 🟢 Thêm sản phẩm vào giỏ
     @Override
     @Transactional
     public Cart addToCart(Long userId, Long productId, int quantity) {
@@ -79,12 +78,12 @@ public class CartService implements ICartService {
                 item = new CartItem();
                 item.setCart(cart);
                 item.setProduct(product);
+                item.setPrice(product.getPrice()); // 🟢 Lưu đơn giá
                 cart.getItems().add(item);
             }
 
             item.setQuantity(newQuantity);
-            item.setPrice(product.getPrice() * newQuantity);
-            product.setStock(product.getStock() - newQuantity);
+            product.setStock(product.getStock() - quantity); // chỉ trừ phần thêm mới
 
             cartItemRepository.save(item);
         }
@@ -93,6 +92,7 @@ public class CartService implements ICartService {
         updateCartTotal(cart);
         return cartRepository.save(cart);
     }
+
 
     @Override
     public Cart getCart(Long userId) {
@@ -134,7 +134,7 @@ public class CartService implements ICartService {
                 throw new RuntimeException("Not enough stock for product: " + product.getName());
 
             item.setQuantity(quantity);
-            item.setPrice(product.getPrice() * quantity);
+            item.setPrice(product.getPrice());
 
             cartItemRepository.save(item);
 
@@ -147,7 +147,6 @@ public class CartService implements ICartService {
     }
 
 
-    // 🟢 Xóa 1 item
     @Override
     @Transactional
     public Cart removeItem(Long userId, Long itemId) {

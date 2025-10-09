@@ -22,6 +22,7 @@ public class SecurityConfig {
 
     private final String[] PUBLIC_ENDPOINTS = {
             "/api/products/public/**",
+            "/api/categories/public/**",
             "/api/auth/**",
             "/api/carts/**"
     };

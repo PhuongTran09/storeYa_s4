@@ -16,7 +16,7 @@ export class CategoryService {
 
   // Lấy tất cả category
   getAll(): Observable<Category[]> {
-    return this.http.get<Category[]>(BASE_URL);
+    return this.http.get<Category[]>(`${BASE_URL}/public/all`);
   }
 
   // Tạo mới category

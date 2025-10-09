@@ -6,6 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../../../shared/layout/navbar/navbar.component';
 import { VndPipe } from '../../../shared/pipes/truncate.pipe';
 import { CartService } from '../../../core/services/cart.service';  // 👈 import CartService
+import { ToastComponent } from '../../../shared/toast/toast.component';
+import { ToastService } from '../../../core/services/toast.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-product-detail',
@@ -21,11 +24,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   animating = false;
   direction: 'left' | 'right' = 'right';
   quantity = 1;
+  saving: boolean | undefined;
 
   constructor(
     private route: ActivatedRoute,
     private productService: ProductService,
-    private cartService: CartService   // 👈 inject service
+    private cartService: CartService,   // 👈 inject service
+    private toast: ToastService  // 👈 inject ToastService
   ) { }
 
   ngOnInit() {
@@ -93,18 +98,28 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       this.quantity--;
     }
   }
-
   addToCart() {
     if (!this.product) return;
 
-    // ⚠️ Không cần userId nữa vì BE tự lấy từ token
-    this.cartService.addToCart(
-      this.product.id ?? 0,      // productId (number)
-      this.quantity,    // optional name
-    ).subscribe(() => {
-      alert('🛒 Đã thêm sản phẩm vào giỏ!');
-    });
+    // Hiển thị toast loading
+    this.toast.show('Đang thêm sản phẩm vào giỏ...', 'loading');
+    this.saving = true; // optional nếu bạn muốn disable nút
+
+    this.cartService.addToCart(this.product.id ?? 0, this.quantity)
+      .pipe(finalize(() => (this.saving = false))) // reset trạng thái nút
+      .subscribe({
+        next: () => {
+          // Thêm thành công → toast success
+          this.toast.show('🛒 Đã thêm sản phẩm vào giỏ!', 'success');
+        },
+        error: (err) => {
+          // Thêm thất bại → toast error
+          this.toast.show('❌ Thêm sản phẩm thất bại!', 'error');
+          console.error(err);
+        }
+      });
   }
+
 
 
 

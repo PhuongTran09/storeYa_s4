@@ -1,49 +1,55 @@
 <nav class="w-full bg-white border-b border-gray-100 sticky top-0 z-50 transition-shadow duration-300 hover:shadow-lg">
   <div class="max-w-7xl mx-auto flex items-center justify-between px-4 py-3 lg:px-8">
 
-    <a href="#" class="text-2xl font-extrabold text-sky-500 tracking-wider">STORE YA</a>
+    <a routerLink="/home" class="text-2xl font-extrabold text-sky-500 tracking-wider">STORE YA</a>
 
-    <div id="menu-content"
-      class="absolute lg:static top-[58px] left-0 w-full lg:w-auto bg-white 
+    <div id="menu-content" class="absolute lg:static top-[58px] left-0 w-full lg:w-auto bg-white 
              lg:flex lg:items-center lg:justify-between transition-all duration-300 ease-in-out
              shadow-lg lg:shadow-none border-t lg:border-t-0"
       [ngClass]="{ 'hidden': !isMenuOpen, 'block': isMenuOpen, 'lg:block': true }">
 
       <form class="relative mx-4 my-4 lg:my-0 flex w-auto lg:w-[350px]">
-        <input type="search" placeholder="Tìm kiếm sản phẩm..." 
-          class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full bg-gray-50 
+        <input type="search" placeholder="Tìm kiếm sản phẩm..." class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full bg-gray-50 
                  focus:ring-2 focus:ring-sky-400 focus:border-sky-400 
                  outline-none transition duration-200" />
-        <button type="submit" 
+        <button type="submit"
           class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-sky-600 transition duration-200">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
       </form>
 
       <ul class="flex flex-col lg:flex-row lg:items-center text-gray-700 px-4 py-2 lg:p-0">
-        <li><a href="#" class="block px-3 py-3 lg:py-2 text-base font-medium hover:text-sky-500 transition duration-200">Danh mục</a></li>
-        <li><a href="#" class="block px-3 py-3 lg:py-2 text-base font-medium hover:text-sky-500 transition duration-200">Về chúng tôi</a></li>
-        
+        <li><a href="#"
+            class="block px-3 py-3 lg:py-2 text-base font-medium hover:text-sky-500 transition duration-200">Danh
+            mục</a></li>
+        <li><a href="#"
+            class="block px-3 py-3 lg:py-2 text-base font-medium hover:text-sky-500 transition duration-200">Về chúng
+            tôi</a></li>
+
         <li class="relative mt-2 lg:mt-0 mb-2 lg:mb-0 lg:ml-4">
-          <button *ngIf="!isLoggedIn" (click)="toggleLogin()"
-            class="w-full lg:w-auto px-4 py-2 border border-sky-500 text-sky-500 rounded-lg text-sm font-semibold 
+          <button *ngIf="!isLoggedIn" (click)="toggleLogin()" class="  px-4 py-2 border border-sky-500 text-sky-500 rounded-lg text-sm font-semibold 
                    hover:bg-sky-500 hover:text-white transition duration-200">
             Đăng nhập
           </button>
-          
-          <div *ngIf="isLoggedIn" class="relative group">
-            <button class="px-4 py-2 flex items-center text-sky-500 rounded-lg text-sm font-semibold 
-                           hover:text-gray-900 transition w-auto">
-              <i class="fa-solid fa-circle-user text-xl mr-2"></i> 
+
+          <div *ngIf="isLoggedIn" class="relative group inline-block">
+            <!-- Nút user -->
+            <button class="px-4 py-2 flex items-center text-sky-600 rounded-lg text-sm font-semibold 
+           hover:text-gray-900 transition select-none">
+              <i class="fa-solid fa-circle-user text-xl mr-2"></i>
               <span class="truncate max-w-[80px]">{{ username }}</span>
               <i class="fa-solid fa-chevron-down ml-2 text-xs"></i>
             </button>
 
-            <ul class="absolute right-0 lg:left-0 mt-1 w-40 bg-white border border-gray-200 shadow-xl rounded-lg z-50 
-                       opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-300 transform scale-95 group-hover:scale-100">
+            <!-- Dropdown menu -->
+            <ul class="absolute  mt-2 w-44 bg-white border border-gray-200 shadow-lg rounded-xl z-50
+           opacity-0 invisible translate-y-1
+           group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
+           transition-all duration-200 ease-in-out">
               <li>
-                <a href="#" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition">
-                    Tài khoản của tôi
+                <a routerLink="/profile"
+                  class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition">
+                  Tài khoản của tôi
                 </a>
               </li>
               <li>
@@ -54,19 +60,20 @@
               </li>
             </ul>
           </div>
+
         </li>
       </ul>
     </div>
-    
+
     <div class="flex items-center space-x-4">
       <div class="relative">
         <a routerLink="/cart" class="p-2 rounded-full transition duration-200">
           <i class="fa-solid fa-cart-shopping text-xl text-gray-700 hover:text-sky-500"></i>
-          </a>
+        </a>
       </div>
 
-      <button class="lg:hidden p-2 text-xl text-gray-700 hover:text-sky-500 focus:outline-none transition duration-200" 
-              (click)="isMenuOpen = !isMenuOpen">
+      <button class="lg:hidden p-2 text-xl text-gray-700 hover:text-sky-500 focus:outline-none transition duration-200"
+        (click)="isMenuOpen = !isMenuOpen">
         <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen"></i>
       </button>
     </div>
@@ -80,7 +87,8 @@
     (click)="$event.stopPropagation()">
 
     <ng-container *ngIf="showLogin">
-      <app-login (registerClick)="switchToRegister()" (forgotPasswordClick)="switchToForgotPassword()" (loginSuccess)="onLoginSuccess()"></app-login>
+      <app-login (registerClick)="switchToRegister()" (forgotPasswordClick)="switchToForgotPassword()"
+        (loginSuccess)="onLoginSuccess()"></app-login>
     </ng-container>
 
     <ng-container *ngIf="showRegister">
@@ -94,12 +102,6 @@
   </div>
 </div>
 
-<app-confirm-dialog
-  *ngIf="showLogoutConfirm"
-  [title]="'Xác nhận đăng xuất'"
-  [message]="'Bạn có chắc chắn muốn đăng xuất không?'"
-  [confirmText]="'Có'"
-  [cancelText]="'Không'"
-  (confirmed)="onConfirmLogout()"
-  (cancelled)="onCancelLogout()"
-></app-confirm-dialog>
+<app-confirm-dialog *ngIf="showLogoutConfirm" [title]="'Xác nhận đăng xuất'"
+  [message]="'Bạn có chắc chắn muốn đăng xuất không?'" [confirmText]="'Có'" [cancelText]="'Không'"
+  (confirmed)="onConfirmLogout()" (cancelled)="onCancelLogout()"></app-confirm-dialog>

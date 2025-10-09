@@ -3,6 +3,7 @@ import { authGuard } from './core/guards/auth.guards';
 import { NotFoundComponent } from './page/not-found/not-found.component';
 import { ProductDetailComponent } from './components/product/product-detail/product-detail.component';
 import { CartListComponent } from './components/carts/cart-list/cart-list.component';
+import { ProfileComponent } from './components/profile/profile.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -18,7 +19,8 @@ export const routes: Routes = [
       },
 
       { path: 'product/:id', component: ProductDetailComponent },
-      { path: 'cart', component: CartListComponent }
+      { path: 'cart', component: CartListComponent },
+      { path: 'profile', component: ProfileComponent }
 
     ]
 

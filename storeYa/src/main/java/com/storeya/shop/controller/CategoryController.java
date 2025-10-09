@@ -19,7 +19,7 @@ public class CategoryController {
     }
 
     // Lấy tất cả categories
-    @GetMapping
+    @GetMapping("public/all")
     public ResponseEntity<List<Category>> getAll() {
         return ResponseEntity.ok(categoryService.findAll());
     }

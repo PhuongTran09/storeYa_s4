@@ -1,15 +1,46 @@
 <div *ngIf="toast"
-    class="fixed top-6 left-1/2 -translate-x-1/2 w-[360px] max-w-[90%] bg-white rounded-lg shadow-lg border text-gray-800 z-50 animate-slide-down">
-    <!-- Header -->
-    <div class="flex justify-between items-center px-4 py-2 border bg-gray-100">
-        <strong class="font-semibold">Notification</strong>
-        <button (click)="closeToast()" class="text-gray-400 hover:text-gray-600 text-lg leading-none">
-            <i class="fa-solid fa-xmark"></i>
+     [ngClass]="{
+         'border-sky-400': toast.type === 'success',
+         'border-red-400': toast.type === 'error',
+         'border-amber-400': toast.type === 'warning'
+     }"
+     class="fixed top-6 left-1/2 -translate-x-1/2 w-full max-w-sm bg-white rounded-lg shadow-2xl border-l-4 z-50 animate-slide-down transition-all duration-300 overflow-hidden">
+    
+    <div class="flex items-start p-4">
+        
+        <div class="flex-shrink-0 mr-3 mt-0.5" 
+             [ngClass]="{
+                 'text-sky-500': toast.type === 'success',
+                 'text-red-500': toast.type === 'error',
+                 'text-amber-500': toast.type === 'warning'
+             }">
+            <i class="fa-solid text-xl" 
+               [ngClass]="{
+                   'fa-circle-check': toast.type === 'success',
+                   'fa-circle-xmark': toast.type === 'error',
+                   'fa-triangle-exclamation': toast.type === 'warning'
+               }"></i>
+        </div>
+
+        <div class="flex-1">
+            <strong class="text-base font-semibold block"
+                    [ngClass]="{
+                        'text-sky-800': toast.type === 'success',
+                        'text-red-800': toast.type === 'error',
+                        'text-amber-800': toast.type === 'warning'
+                    }">
+                {{ toast.type === 'success' ? 'Thành công' : (toast.type === 'error' ? 'Lỗi hệ thống' : 'Cảnh báo') }}
+            </strong>
+            
+            <p class="text-sm text-gray-700 mt-1">
+                {{ toast.message }}
+            </p>
+        </div>
+
+        <button (click)="closeToast()" 
+                class="ml-4 -mr-1 -mt-1 p-1 text-gray-400 hover:text-gray-600 rounded transition duration-150">
+            <i class="fa-solid fa-xmark text-lg"></i>
         </button>
     </div>
 
-    <!-- Body -->
-    <div class="px-4 py-3">
-        <p class="text-sm">{{ toast.message }}</p>
     </div>
-</div>

@@ -5,13 +5,14 @@ import { CartItemComponent } from '../cart-item/cart-item.component';
 import { CommonModule } from '@angular/common';
 import { VndPipe } from '../../../shared/pipes/truncate.pipe';
 import { HeaderComponent } from '../../../shared/layout/navbar/navbar.component';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-cart-list',
   templateUrl: './cart-list.component.html',
   styleUrls: ['./cart-list.component.scss'],
   standalone: true,
-  imports: [CommonModule, CartItemComponent, VndPipe, HeaderComponent],
+  imports: [CommonModule, CartItemComponent, VndPipe, HeaderComponent, RouterLink],
 })
 export class CartListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
