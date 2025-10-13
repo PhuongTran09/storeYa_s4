@@ -26,12 +26,9 @@
 
   <div class="flex-1 p-4 text-left">
     <h2 class="font-bold text-lg mb-1 text-gray-800 line-clamp-1 leading-snug">
-      {{ product.name }}
+      {{ product.name | truncate }}
     </h2>
 
-    <p class="text-sm text-gray-400 mb-3 line-clamp-2">
-      {{ product.description }}
-    </p>
 
     <div class="flex justify-start items-center">
       <span class="text-sky-500 font-extrabold text-xl">

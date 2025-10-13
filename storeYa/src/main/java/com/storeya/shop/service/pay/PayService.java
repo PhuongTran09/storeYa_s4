@@ -1,6 +1,7 @@
 package com.storeya.shop.service.pay;
 
 import com.storeya.shop.dto.PaymentDTO;
+import com.storeya.shop.entity.Cart;
 import com.storeya.shop.entity.Payment;
 import com.storeya.shop.entity.User;
 import com.storeya.shop.enums.PaymentMethod;
@@ -9,6 +10,7 @@ import com.storeya.shop.mapper.PaymentMapper;
 import com.storeya.shop.repository.CartRepository;
 import com.storeya.shop.repository.PaymentRepository;
 import com.storeya.shop.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,47 +28,82 @@ public class PayService implements IPayService {
     private final CartRepository cartRepository;
 
     @Override
+    @Transactional
     public PaymentDTO createPayment(PaymentDTO dto) {
-        // 🔹 Lấy thông tin user
+        // 🔹 Validate user
         User user = userRepository.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // 🔹 Lấy giỏ hàng của user
-        var cart = cartRepository.findByUserId(user.getId())
+        Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        // 🔹 Tính tổng tiền giỏ hàng
-        double total = cart.getTotalPrice();
+        if (cart.getItems() == null || cart.getItems().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
+        }
 
-        // 🔹 Map sang entity Payment
+        // 🔹 Tính tổng tiền giỏ hàng
+        double total = cart.getItems()
+                .stream()
+                .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                .sum();
+
+        // 🔹 Tạo entity Payment
         Payment payment = paymentMapper.toEntity(dto);
         payment.setUser(user);
         payment.setAmount(BigDecimal.valueOf(total));
         payment.setPaidAt(LocalDateTime.now());
 
-        // 🔹 Gán thông tin người nhận từ user
-        payment.setRecipientName(user.getFirstName() + " " + user.getLastName());
-        payment.setRecipientPhone(user.getPhone());
-        payment.setRecipientAddress(user.getAddress());
-        payment.setRecipientEmail(user.getEmail());
+        payment.setRecipientName(
+                dto.getRecipientName() != null && !dto.getRecipientName().isBlank()
+                        ? dto.getRecipientName()
+                        : user.getFirstName() + " " + user.getLastName()
+        );
+        payment.setRecipientPhone(
+                dto.getRecipientPhone() != null && !dto.getRecipientPhone().isBlank()
+                        ? dto.getRecipientPhone()
+                        : user.getPhone()
+        );
+        payment.setRecipientAddress(
+                dto.getRecipientAddress() != null && !dto.getRecipientAddress().isBlank()
+                        ? dto.getRecipientAddress()
+                        : user.getAddress()
+        );
+        payment.setRecipientEmail(
+                dto.getRecipientEmail() != null && !dto.getRecipientEmail().isBlank()
+                        ? dto.getRecipientEmail()
+                        : user.getEmail()
+        );
 
-        // 🔹 Nếu là COD
+        // 🔹 Xử lý phương thức thanh toán
         if (dto.getMethod() == PaymentMethod.COD) {
             payment.setStatus(PaymentStatus.PENDING);
-            payment.setDetails("Thanh toán khi nhận hàng (COD)");
+            if (dto.getDetails() != null && !dto.getDetails().isBlank()) {
+                payment.setDetails(dto.getDetails());
+            } else {
+                payment.setDetails("Thanh toán khi nhận hàng (COD)");
+            }
+        } else {
+            payment.setStatus(PaymentStatus.PAID);
+            payment.setPaidAt(LocalDateTime.now());
+            if (dto.getDetails() != null && !dto.getDetails().isBlank()) {
+                payment.setDetails(dto.getDetails());
+            } else {
+                payment.setDetails("Thanh toán trực tuyến thành công");
+            }
+
         }
 
         // 🔹 Lưu Payment
         Payment saved = paymentRepository.save(payment);
 
-        // 🔹 Clear giỏ hàng sau khi thanh toán
+        // 🔹 Clear giỏ hàng sau khi tạo đơn
         cart.getItems().clear();
         cart.setTotalPrice(0.0);
         cartRepository.save(cart);
 
         return paymentMapper.toDTO(saved);
     }
-
 
 
     @Override

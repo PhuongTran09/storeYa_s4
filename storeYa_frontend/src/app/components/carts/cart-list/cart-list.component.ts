@@ -55,14 +55,7 @@ export class CartListComponent implements OnInit, OnDestroy {
   }
   
 
-  checkout() {
-    if (this.total === 0) return;
-    alert(`Thanh toán tổng cộng: ${this.total.toLocaleString('vi-VN')} VND`);
-    this.cartService.clearCart().subscribe({
-      next: () => console.log('✅ Cart cleared'),
-      error: err => console.error('❌ Clear cart failed:', err)
-    });
-  }
+ 
 
   ngOnDestroy() {
     this.destroy$.next();
