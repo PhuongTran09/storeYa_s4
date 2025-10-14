@@ -7,7 +7,7 @@ import com.storeya.shop.entity.User;
 import com.storeya.shop.repository.UserRepository;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.representations.AccessToken;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -109,7 +109,8 @@ public class AuthService implements IAuthService {
             return new TokenResponse(
                     body.get("access_token").toString(),
                     body.get("refresh_token").toString(),
-                    Long.parseLong(body.get("expires_in").toString())
+                    Long.parseLong(body.get("expires_in").toString()),
+                    Long.parseLong(body.get("refresh_expires_in").toString())
 
             );
         } catch (Exception e) {
@@ -233,17 +234,23 @@ public class AuthService implements IAuthService {
                 throw new RuntimeException("Keycloak response missing token info");
             }
 
+
+            long expiresIn = Long.parseLong(body.get("expires_in").toString());
+            long refreshExpiresIn = Long.parseLong(body.get("refresh_expires_in").toString());
+
             return new TokenResponse(
                     body.get("access_token").toString(),
                     body.get("refresh_token").toString(),
-                    Long.parseLong(body.get("expires_in").toString())
+                    expiresIn,
+                    refreshExpiresIn
             );
+
+
         } catch (Exception e) {
             throw new RuntimeException("Refresh failed: " + e.getMessage());
         }
-
-
     }
+
 
     @Override
     public Long getUserIdFromToken(Jwt principal) {
@@ -254,7 +261,6 @@ public class AuthService implements IAuthService {
                 .map(User::getId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
     }
-
 
 
 }

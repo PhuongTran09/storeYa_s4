@@ -7,6 +7,7 @@ import { RegisterComponent } from '../../../components/auth/register/register.co
 import { ForgotPasswordComponent } from '../../../components/auth/forgot-password/forgot-password.component';
 import { NavbarService } from '../../../core/services/navbar.service';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog.component';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-header',
@@ -24,7 +25,7 @@ import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog.comp
 })
 export class HeaderComponent implements OnInit {
   isLoggedIn = false;
-  username = '';
+  username : any;
   isUserMenuOpen = false;
 
   isMenuOpen = false;
@@ -34,22 +35,32 @@ export class HeaderComponent implements OnInit {
   isClosing = false;
   showLogoutConfirm = false;
 
-  constructor(private authService: AuthService, private router: Router, private navbarService: NavbarService) { }
+  constructor(private authService: AuthService, private router: Router, private navbarService: NavbarService, private userService: UserService) { }
 
   ngOnInit(): void {
     this.authService.isAuthenticated$.subscribe((loggedIn) => {
       this.isLoggedIn = loggedIn;
-      this.username = loggedIn ? this.authService.getUsername() : '';
-      if (loggedIn && this.showLogin) {
-        this.navbarService.closeLoginModal();
 
+      if (loggedIn) {
+        this.userService.getCurrentUser().subscribe({
+          next: (user) => {
+            this.username = user?.username ;
+          },
+          error: () => {
+            this.username = 'User';
+          },
+        });
+
+        if (this.showLogin) {
+          this.navbarService.closeLoginModal();
+        }
+      } else {
+        this.username = 'User';
       }
     });
     this.navbarService.loginModalState$.subscribe(state => {
       this.showLogin = state;
     });
-
-
 
 
   }

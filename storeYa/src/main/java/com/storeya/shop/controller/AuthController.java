@@ -107,9 +107,12 @@ public class AuthController {
             TokenResponse newToken = authService.refreshToken(refreshToken);
             return ResponseEntity.ok(newToken);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+            System.err.println("Refresh token invalid or expired: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "invalid_refresh_token"));
         }
     }
+
 
 
 

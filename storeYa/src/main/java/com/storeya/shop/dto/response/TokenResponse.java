@@ -10,11 +10,15 @@ public class TokenResponse {
     private String accessToken;
     private String refreshToken;
     private long expiresIn;
+    private long refreshExpiresIn;
 
-    public TokenResponse(String accessToken, String refreshToken, long expiresIn) {
+
+    public TokenResponse(String accessToken, String refreshToken, long expiresIn, long refreshExpiresIn) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.expiresIn = expiresIn;
+        this.refreshExpiresIn = refreshExpiresIn;
+
 
     }
 

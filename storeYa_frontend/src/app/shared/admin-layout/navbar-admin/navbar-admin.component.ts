@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog.component';
 import { CommonModule } from '@angular/common';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-navbar-admin',
@@ -12,13 +13,20 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./navbar-admin.component.scss']
 })
 export class NavbarAdminComponent implements OnInit {
-  username = '';
+  username: any;
   showLogoutConfirm = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private router: Router,private userService: UserService) { }
 
   ngOnInit(): void {
-    this.username = this.authService.getUsername();
+    this.username = this.userService.getCurrentUser().subscribe({
+          next: (user) => {
+            this.username = user?.username ;
+          },
+          error: () => {
+            this.username = 'User';
+          },
+        });
   }
 
   onConfirmLogout() {

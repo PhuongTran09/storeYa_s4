@@ -24,8 +24,6 @@ export class CartListComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Load cart từ backend
     this.cartService.loadCart().subscribe({
-      next: () => console.log('🛒 Cart loaded successfully'),
-      error: err => console.error('❌ Load cart failed:', err)
     });
 
     // Theo dõi thay đổi giỏ hàng
@@ -40,11 +38,11 @@ export class CartListComponent implements OnInit, OnDestroy {
   updateQuantity(event: { id: number; qty: number }) {
     const sub = this.cartService.updateQuantity(event.id, event.qty).subscribe({
       next: () => {
-        console.log(`🔄 Updated quantity for item ${event.id}`);
+        console.log(`Updated quantity for item ${event.id}`);
         sub.unsubscribe();
       },
       error: err => {
-        console.error('❌ Update quantity failed:', err);
+        console.error('Update quantity failed:', err);
         sub.unsubscribe();
       }
     });
