@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { apiUrl } from '../../../environment/api.config';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {apiUrl} from '../../../environment/api.config';
 
 const BASE_URL = apiUrl.BASE_URL + '/payments';
 
@@ -17,6 +17,7 @@ export interface PaymentDTO {
   recipientEmail: string;
   details?: string;
   paidAt?: Date;
+  items?: any[]; // Chi tiết sản phẩm trong đơn hàng
 }
 
 @Injectable({

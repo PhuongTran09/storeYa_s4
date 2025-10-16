@@ -27,9 +27,11 @@ public class CartService implements ICartService {
     }
 
     private void updateCartTotal(Cart cart) {
-        cart.setTotalPrice(cart.getItems().stream()
-                .mapToDouble(CartItem::getPrice)
-                .sum());
+        double total = cart.getItems().stream()
+                // NHÂN ĐƠN GIÁ VỚI SỐ LƯỢNG
+                .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                .sum();
+        cart.setTotalPrice(total);
     }
 
     private Cart getOrCreateCart(Long userId) {
@@ -44,52 +46,54 @@ public class CartService implements ICartService {
     @Override
     @Transactional
     public Cart addToCart(Long userId, Long productId, int quantity) {
-        if (quantity == 0) throw new RuntimeException("Quantity must not be 0");
+        if (quantity == 0) {
+            throw new IllegalArgumentException("Quantity cannot be zero.");
+        }
 
         Cart cart = getOrCreateCart(userId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-        CartItem item = cart.getItems().stream()
+        CartItem existingItem = cart.getItems().stream()
                 .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst()
                 .orElse(null);
 
-        // Nếu đã có item → hoàn trả stock cũ
-        if (item != null) {
-            product.setStock(product.getStock() + item.getQuantity());
-        }
-
-        int newQuantity = (item != null ? item.getQuantity() : 0) + quantity;
+        int oldQuantity = (existingItem != null) ? existingItem.getQuantity() : 0;
+        int newQuantity = oldQuantity + quantity;
 
         if (newQuantity <= 0) {
-            // Xóa item
-            if (item != null) {
-                cart.getItems().remove(item);
-                cartItemRepository.delete(item);
+            // Nếu số lượng mới <= 0, xóa sản phẩm khỏi giỏ
+            if (existingItem != null) {
+                product.setStock(product.getStock() + oldQuantity); // Hoàn trả lại kho
+                cart.getItems().remove(existingItem);
+                cartItemRepository.delete(existingItem);
             }
         } else {
-            // Kiểm tra tồn kho
-            if (product.getStock() < newQuantity) {
+            // Tính toán sự thay đổi số lượng cần lấy từ kho
+            int quantityChange = newQuantity - oldQuantity;
+
+            // Kiểm tra xem kho có đủ cho sự thay đổi này không
+            if (product.getStock() < quantityChange) {
                 throw new RuntimeException("Not enough stock for product: " + product.getName());
             }
 
-            if (item == null) {
-                item = new CartItem();
-                item.setCart(cart);
-                item.setProduct(product);
-                item.setPrice(product.getPrice()); // 🟢 Lưu đơn giá
-                cart.getItems().add(item);
+            if (existingItem == null) {
+                existingItem = new CartItem();
+                existingItem.setCart(cart);
+                existingItem.setProduct(product);
+                existingItem.setPrice(product.getPrice()); // Lưu đơn giá tại thời điểm thêm
+                cart.getItems().add(existingItem);
             }
 
-            item.setQuantity(newQuantity);
-            product.setStock(product.getStock() - quantity); // chỉ trừ phần thêm mới
+            existingItem.setQuantity(newQuantity);
+            product.setStock(product.getStock() - quantityChange); // Chỉ trừ đi phần thay đổi
 
-            cartItemRepository.save(item);
+            cartItemRepository.save(existingItem);
         }
 
         productRepository.save(product);
-        updateCartTotal(cart);
+        updateCartTotal(cart); // Gọi phương thức đã sửa lỗi
         return cartRepository.save(cart);
     }
 
@@ -102,47 +106,43 @@ public class CartService implements ICartService {
     @Override
     @Transactional
     public Cart updateItem(Long userId, Long productId, int quantity) {
-        Cart cart = getOrCreateCart(userId);
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId));
 
-        // Tìm CartItem, nếu không có thì tạo mới
+        // Sửa lại logic tìm kiếm cho đúng
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getId().equals(productId))
                 .findFirst()
-                .orElseGet(() -> {
-                    CartItem newItem = new CartItem();
-                    Product product = productRepository.findById(productId)
-                            .orElseThrow(() -> new RuntimeException("Product not found"));
-                    newItem.setProduct(product);
-                    newItem.setQuantity(0);
-                    newItem.setPrice(0.0);
-                    newItem.setCart(cart);
-                    cart.getItems().add(newItem);
-                    return newItem;
-                });
+                .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found in cart"));
 
         Product product = item.getProduct();
-
-        // Hoàn trả stock cũ trước khi cập nhật
-        product.setStock(product.getStock() + item.getQuantity());
+        int oldQuantity = item.getQuantity();
 
         if (quantity <= 0) {
-            // Xóa item khỏi cart, không xóa product
+            // Nếu số lượng mới là 0 hoặc âm -> Xóa sản phẩm khỏi giỏ
+            product.setStock(product.getStock() + oldQuantity); // Hoàn trả toàn bộ số lượng cũ vào kho
             cart.getItems().remove(item);
             cartItemRepository.delete(item);
         } else {
-            if (product.getStock() < quantity)
-                throw new RuntimeException("Not enough stock for product: " + product.getName());
+            // Logic tồn kho mới, dựa trên sự thay đổi
+            int quantityChange = quantity - oldQuantity;
 
+
+            if (product.getStock() < quantityChange) {
+                throw new RuntimeException("Not enough stock for product: " + product.getName() +
+                        ". Available: " + product.getStock() + ", Required change: " + quantityChange);
+            }
+
+            // Cập nhật số lượng mới cho item
             item.setQuantity(quantity);
-            item.setPrice(product.getPrice());
+            // Cập nhật tồn kho dựa trên sự thay đổi
+            product.setStock(product.getStock() - quantityChange);
 
             cartItemRepository.save(item);
-
-            product.setStock(product.getStock() - quantity);
         }
 
         productRepository.save(product);
-        updateCartTotal(cart);
+        updateCartTotal(cart); // Gọi phương thức tính tổng tiền đã được sửa lỗi
         return cartRepository.save(cart);
     }
 

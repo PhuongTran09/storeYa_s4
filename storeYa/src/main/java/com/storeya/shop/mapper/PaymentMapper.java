@@ -3,11 +3,16 @@ package com.storeya.shop.mapper;
 import com.storeya.shop.dto.PaymentDTO;
 import com.storeya.shop.entity.Payment;
 import com.storeya.shop.entity.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
-public class PaymentMapper {
+import java.util.Collections;
+import java.util.stream.Collectors;
 
+@Component
+@RequiredArgsConstructor
+public class PaymentMapper {
+    private final OrderItemMapper orderItemMapper;
     public PaymentDTO toDTO(Payment payment) {
         if (payment == null) return null;
 
@@ -23,7 +28,17 @@ public class PaymentMapper {
         dto.setRecipientEmail(payment.getRecipientEmail());
         dto.setDetails(payment.getDetails());
         dto.setPaidAt(payment.getPaidAt());
+
+        if (payment.getItems() != null && !payment.getItems().isEmpty()) {
+            dto.setItems(payment.getItems().stream()
+                    .map(orderItemMapper::toDTO) // Dùng orderItemMapper để chuyển đổi từng item
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setItems(Collections.emptyList()); // Trả về mảng rỗng thay vì null
+        }
+
         return dto;
+
     }
 
     public Payment toEntity(PaymentDTO dto) {

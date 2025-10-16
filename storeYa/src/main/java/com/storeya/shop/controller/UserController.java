@@ -1,9 +1,9 @@
 package com.storeya.shop.controller;
 
 import com.storeya.shop.dto.UserDTO;
-import com.storeya.shop.mapper.UserMapper;
 import com.storeya.shop.service.auth.IAuthService;
 import com.storeya.shop.service.user.IUserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -12,18 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
 
     private final IUserService userService;
     private final IAuthService authService;
 
-    public UserController(IUserService userService, IAuthService authService) {
-        this.userService = userService;
-        this.authService = authService;
-    }
 
-    // 🔹 Lấy tất cả user
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -36,6 +32,7 @@ public class UserController {
         UserDTO user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
+
     @PutMapping("/me")
     public ResponseEntity<UserDTO> updateCurrentUser(
             @AuthenticationPrincipal Jwt principal,

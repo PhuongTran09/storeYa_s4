@@ -2,32 +2,24 @@ package com.storeya.shop.controller;
 
 import com.storeya.shop.dto.ProductDTO;
 import com.storeya.shop.dto.response.PageResponse;
-
-import com.storeya.shop.service.category.ICategoryService;
 import com.storeya.shop.service.cloudinary.ICloudinaryService;
 import com.storeya.shop.service.product.IProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/products")
 public class ProductController {
 
     private final IProductService productService;
     private final ICloudinaryService cloudinaryService;
 
-    public ProductController(IProductService productService, ICloudinaryService cloudinaryService) {
-        this.productService = productService;
-        this.cloudinaryService = cloudinaryService;
-
-
-    }
 
     @GetMapping("/public/all")
     public ResponseEntity<List<ProductDTO>> findAll() {
@@ -77,7 +69,7 @@ public class ProductController {
     }
 
     @PostMapping("/cloudinary/delete")
-    public ResponseEntity<?> deleteCloudinary(@RequestBody Map<String, String> body) throws IOException {
+    public ResponseEntity<?> deleteCloudinary(@RequestBody Map<String, String> body) {
         String url = body.get("url");
         String publicId = cloudinaryService.getPublicIdFromUrl(url);
         cloudinaryService.deleteFile(publicId);

@@ -1,33 +1,19 @@
 package com.storeya.shop.service.pay;
 
 import com.storeya.shop.dto.PaymentDTO;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IPayService {
 
-    /**
-     * Tạo một giao dịch thanh toán (pending)
-     */
-    PaymentDTO createPayment(PaymentDTO dto);
+    Map<String, Object> createPayment(PaymentDTO dto, HttpServletRequest request);
 
-    /**
-     * Xác nhận thanh toán thành công
-     */
+    void processVnPayIPN(Map<String, String> vnPayParams);
+
     PaymentDTO confirmPayment(Long paymentId, String transactionId);
-
-    /**
-     * Hủy thanh toán
-     */
     PaymentDTO cancelPayment(Long paymentId);
-
-    /**
-     * Lấy danh sách thanh toán của user
-     */
     List<PaymentDTO> getPaymentsByUser(Long userId);
 
-    /**
-     * Lấy chi tiết thanh toán theo ID
-     */
-    PaymentDTO getPaymentById(Long id);
 }

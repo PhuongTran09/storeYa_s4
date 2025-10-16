@@ -3,14 +3,16 @@ package com.storeya.shop.controller;
 import com.storeya.shop.dto.CartDTO;
 import com.storeya.shop.entity.Cart;
 import com.storeya.shop.mapper.CartMapper;
-import com.storeya.shop.service.cart.ICartService;
 import com.storeya.shop.service.auth.IAuthService;
+import com.storeya.shop.service.cart.ICartService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/carts")
 public class CartController {
 
@@ -18,11 +20,6 @@ public class CartController {
     private final CartMapper cartMapper;
     private final IAuthService authService;
 
-    public CartController(ICartService cartService, CartMapper cartMapper, IAuthService authService) {
-        this.cartService = cartService;
-        this.cartMapper = cartMapper;
-        this.authService = authService;
-    }
 
     private Long getUserId(Jwt principal) {
         return authService.getUserIdFromToken(principal);

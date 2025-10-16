@@ -1,79 +1,84 @@
 <app-header></app-header>
-<div class="max-w-6xl mx-auto mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-    <h2 class="text-xl font-bold text-gray-800 mb-5 border-b pb-3 flex items-center gap-2">
-        <i class="fa-solid fa-box-archive text-sky-600"></i> Lịch sử đơn hàng
+<div class="">
+  <div class="max-w-6xl mx-auto py-6 px-4">
+    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-5 flex items-center gap-3">
+      <i class="fa-solid fa-receipt text-sky-500"></i>
+      Lịch sử đơn hàng
     </h2>
 
-    <div *ngIf="loading" class="text-center py-6 text-base font-medium text-sky-600">
-        <i class="fa-solid fa-spinner fa-spin-pulse mr-2"></i> Đang tải đơn hàng...
+    <div *ngIf="loading" class="text-center py-10 text-base font-medium text-sky-600">
+      <i class="fa-solid fa-spinner fa-spin-pulse mr-2"></i> Đang tải đơn hàng...
     </div>
 
-    <div *ngIf="!loading && orders.length === 0" class="text-center py-6 text-gray-500 text-sm">
-        <i class="fa-solid fa-box-open mr-2"></i> Bạn chưa có đơn hàng nào.
+    <div *ngIf="!loading && orders.length === 0" class="text-center py-10 bg-white rounded-lg border">
+      <i class="fa-solid fa-box-open fa-2x text-slate-400 mb-3"></i>
+      <p class="text-slate-500">Bạn chưa có đơn hàng nào.</p>
     </div>
 
-    <div *ngIf="!loading && orders.length > 0" class="space-y-4">
-        <div
-            *ngFor="let p of orders; let i = index"
-            class="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition duration-150 ease-in-out"
-        >
-            <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-3">
-                <div class="space-y-0.5">
-                    <p class="text-base font-bold text-sky-700 flex items-center gap-1">
-                        <i class="fa-solid fa-tag text-xs"></i> Đơn hàng #{{ p.id }}
-                    </p>
-                    <p class="text-xs text-gray-500">
-                        Ngày đặt: <span class="text-gray-700">{{ p.paidAt| date: 'dd/MM/yyyy HH:mm' }}</span>
-                    </p>
-                </div>
-                <div class="text-right">
-                    <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded uppercase border"
-                        [ngClass]="{
-                            'bg-sky-50 text-sky-700 border-sky-300': p.method === 'MOMO',
-                            'bg-gray-100 text-gray-700 border-gray-300': p.method === 'COD'
-                        }">
-                        {{ p.method }}
-                    </span>
-                </div>
+    <div *ngIf="!loading && orders.length > 0" class="space-y-4  p-4 rounded-lg">
+      <div
+        *ngFor="let p of orders; let i = index"
+        class=" border border-slate-200 rounded-lg p-4 bg-sky-50  shadow-sm hover:shadow-md hover:border-sky-300 transition-all duration-300 ease-in-out"
+      >
+        <div class="flex flex-col sm:flex-row justify-between items-start border-b border-slate-100 pb-3 mb-3">
+          <div class="space-y-0.5">
+            <p class="text-base font-bold text-sky-600 flex items-center gap-2">
+              <i class="fa-solid fa-tag text-xs"></i>
+              Đơn hàng #{{ p.id }}
+            </p>
+            <p class="text-xs text-slate-500">
+              Ngày đặt: <span class="font-medium text-slate-600">{{ p.paidAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </p>
+          </div>
+          <div class="text-right mt-2 sm:mt-0">
+                        <span [ngClass]="{
+                                'bg-sky-100 text-sky-800': p.method === 'MOMO',
+                                'bg-slate-100 text-slate-800': p.method === 'COD'
+                            }"
+                              class="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full">
+                            {{ p.method }}
+                        </span>
+          </div>
+        </div>
+
+        <div class="flow-root my-4 ">
+          <div class="divide-y divide-slate-100 rounded-md border bg-slate-50/50 p-2">
+            <div *ngFor="let item of p.items" class="flex items-center gap-3 py-2.5">
+              <img [src]="item.image" alt="{{ item.productName }}"
+                   class="w-12 h-12 object-cover rounded-md flex-shrink-0 border"/>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-slate-800 leading-tight">{{ item.productName }}</p>
+                <p class="text-xs text-slate-500 mt-1">Số lượng: {{ item.quantity }}</p>
+              </div>
+              <div class="text-right text-sm font-medium text-slate-700 flex-shrink-0">
+                {{ item.price | number }}₫
+              </div>
             </div>
-
-            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-700 mb-3">
-                <div class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-user-tag text-sky-500 w-3.5"></i>
-                    <p class="truncate" title="{{ p.recipientName }}">Người nhận: <span class="font-medium text-gray-900">{{ p.recipientName }}</span></p>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-phone text-sky-500 w-3.5"></i>
-                    <p>SĐT: <span class="font-medium text-gray-900">{{ p.recipientPhone }}</span></p>
-                </div>
-                <div class="flex items-center gap-1.5 col-span-2">
-                    <i class="fa-solid fa-location-dot text-sky-500 w-3.5"></i>
-                    <p class="truncate" title="{{ p.recipientAddress }}">Địa chỉ: <span class="font-medium text-gray-900">{{ p.recipientAddress }}</span></p>
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                <div>
-                    <p class="text-sm text-gray-600">Tổng tiền:</p>
-                    <p class="text-lg font-extrabold text-green-700 leading-none">
-                        {{ p.amount | number }}₫
-                    </p>
+          </div>
                 </div>
 
-                <div class="text-right">
-                    <span
-                        class="inline-block px-3 py-1 text-xs font-bold rounded-full uppercase border"
-                        [ngClass]="{
-                            'bg-yellow-100 text-yellow-700 border-yellow-300': p.status === 'PENDING',
-                            'bg-green-100 text-green-700 border-green-300': p.status === 'SUCCESS',
-                            'bg-red-100 text-red-700 border-red-300': p.status === 'FAILED'
-                        }"
-                    >
-                        <i *ngIf="p.status === 'PENDING'" class="fa-solid fa-hourglass-half mr-1"></i>
-                        <i *ngIf="p.status === 'SUCCESS'" class="fa-solid fa-circle-check mr-1"></i>
-                        <i *ngIf="p.status === 'FAILED'" class="fa-solid fa-circle-xmark mr-1"></i>
-                        {{ p.status === 'PENDING' ? 'ĐANG CHỜ' : (p.status === 'SUCCESS' ? 'HOÀN THÀNH' : 'THẤT BẠI') }}
-                    </span>
+        <div class="flex flex-col sm:flex-row justify-between items-end gap-3 pt-3 border-t border-slate-100">
+          <div class="w-full sm:w-auto">
+                         <span
+                           [ngClass]="{
+                                'bg-yellow-100 text-yellow-800': p.status === 'PENDING',
+                                'bg-green-100 text-green-800': p.status === 'SUCCESS',
+                                'bg-red-100 text-red-800': p.status === 'FAILED'
+                            }"
+                           class="inline-flex items-center w-full justify-center sm:w-auto px-3 py-1 text-xs font-bold rounded-full">
+                            <i *ngIf="p.status === 'PENDING'" class="fa-solid fa-hourglass-half mr-1.5"></i>
+                            <i *ngIf="p.status === 'SUCCESS'" class="fa-solid fa-circle-check mr-1.5"></i>
+                            <i *ngIf="p.status === 'FAILED'" class="fa-solid fa-circle-xmark mr-1.5"></i>
+                           {{ p.status === 'PENDING' ? 'ĐANG CHỜ' : (p.status === 'SUCCESS' ? 'HOÀN THÀNH' : 'THẤT BẠI') }}
+                        </span>
+          </div>
+
+          <div class="text-right w-full sm:w-auto">
+            <p class="text-sm text-slate-500">Tổng cộng:</p>
+            <p class="text-lg font-bold text-green-600">
+              {{ p.amount | number }}₫
+            </p>
+          </div>
                 </div>
             </div>
         </div>

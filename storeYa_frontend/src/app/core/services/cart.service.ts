@@ -1,10 +1,12 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, tap } from 'rxjs';
-import { apiUrl } from '../../../environment/api.config';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {BehaviorSubject, throwError} from 'rxjs';
+import {catchError, map, tap} from 'rxjs/operators';
+import {apiUrl} from '../../../environment/api.config';
 
 const BASE_URL = apiUrl.BASE_URL + '/carts';
 
+// Interface cho CartItem, không đổi
 export interface CartItem {
   id: number;
   productId: number;
@@ -18,16 +20,79 @@ export interface CartItem {
   providedIn: 'root'
 })
 export class CartService {
-  private cartItems: CartItem[] = [];
-  private cartSubject = new BehaviorSubject<CartItem[]>([]);
+  total$ = this.cart$.pipe(
+    map(items => items.reduce((sum, item) => sum + item.price * item.quantity, 0))
+  );
+
+
   cart$ = this.cartSubject.asObservable();
+  /** * "Selector" cho tổng số lượng sản phẩm trong giỏ.
+   */
+  itemCount$ = this.cart$.pipe(
+    map(items => items.reduce((sum, item) => sum + item.quantity, 0))
+  );
+  // State chính của giỏ hàng
+  private cartSubject = new BehaviorSubject<CartItem[]>([]);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    // Tải giỏ hàng lần đầu khi service được khởi tạo
+    this.loadCart().subscribe();
+  }
 
-  /** Chuẩn hóa dữ liệu item để không bị undefined */
+  /** Tải giỏ hàng từ server */
+  loadCart() {
+    return this.http.get<{ items: any[] }>(`${BASE_URL}`).pipe(
+      tap(res => this._updateCartState(res)),
+      catchError(err => this._handleError(err))
+    );
+  }
+
+  /** Thêm sản phẩm vào giỏ */
+  addToCart(productId: number, quantity: number) {
+    const params = new HttpParams()
+      .set('productId', productId)
+      .set('quantity', quantity);
+
+    return this.http.post<{ items: any[] }>(`${BASE_URL}/items`, null, { params }).pipe(
+      tap(res => this._updateCartState(res)),
+      catchError(err => this._handleError(err))
+    );
+  }
+
+  /** Cập nhật số lượng */
+  updateQuantity(itemId: number, quantity: number) {
+    const params = new HttpParams().set('quantity', quantity);
+
+    return this.http.put<{ items: any[] }>(`${BASE_URL}/items/update/${itemId}`, null, { params }).pipe(
+      tap(res => this._updateCartState(res)),
+      catchError(err => this._handleError(err))
+    );
+  }
+
+  /** Xóa item khỏi giỏ */
+  removeItem(itemId: number) {
+    return this.http.delete<{ items: any[] }>(`${BASE_URL}/items/${itemId}`).pipe(
+      tap(res => this._updateCartState(res)),
+      catchError(err => this._handleError(err))
+    );
+  }
+
+  /** Xóa toàn bộ giỏ */
+  clearCart() {
+    return this.http.delete(`${BASE_URL}/clear`).pipe(
+      tap(() => {
+        // Xóa state ở local
+        this.cartSubject.next([]);
+      }),
+      catchError(err => this._handleError(err))
+    );
+  }
+
+  /** * Chuẩn hóa dữ liệu trả về từ API.
+   * Đây là một best practice để phòng chống lỗi từ backend.
+   */
   private mapCartItem(item: any): CartItem {
     const product = item.product ?? {};
-
     return {
       id: item.id,
       productId: item.productId ?? product.id,
@@ -40,64 +105,20 @@ export class CartService {
     };
   }
 
-  /** Load giỏ hàng */
-  loadCart() {
-    return this.http.get<{ items: any[] }>(`${BASE_URL}`).pipe(
-      tap(res => {
-        this.cartItems = (res?.items ?? []).map(i => this.mapCartItem(i));
-        this.cartSubject.next(this.cartItems);
-      })
-    );
+  /** * Phương thức private để cập nhật state giỏ hàng và thông báo cho các subscribers.
+   * Giúp tránh lặp code (DRY principle).
+   */
+  private _updateCartState(response: { items: any[] } | null) {
+    const mappedItems = (response?.items ?? []).map(i => this.mapCartItem(i));
+    this.cartSubject.next(mappedItems);
   }
 
-  /** Thêm sản phẩm vào giỏ */
-  addToCart(productId: number, quantity: number) {
-    const params = new HttpParams()
-      .set('productId', productId)
-      .set('quantity', quantity);
-
-    return this.http.post<{ items: any[] }>(`${BASE_URL}/items`, null, { params }).pipe(
-      tap(res => {
-        this.cartItems = (res?.items ?? []).map(i => this.mapCartItem(i));
-        this.cartSubject.next(this.cartItems);
-      })
-    );
-  }
-
-  /** Cập nhật số lượng */
-  updateQuantity(itemId: number, quantity: number) {
-    const params = new HttpParams().set('quantity', quantity);
-
-    return this.http.put<{ items: any[] }>(`${BASE_URL}/items/update/${itemId}`, null, { params }).pipe(
-      tap(res => {
-        this.cartItems = (res?.items ?? []).map(i => this.mapCartItem(i));
-        this.cartSubject.next(this.cartItems);
-      })
-    );
-  }
-
-  /** Xóa item khỏi giỏ */
-  removeItem(itemId: number) {
-    return this.http.delete<{ items: any[] }>(`${BASE_URL}/items/${itemId}`).pipe(
-      tap(res => {
-        this.cartItems = (res?.items ?? []).map(i => this.mapCartItem(i));
-        this.cartSubject.next(this.cartItems);
-      })
-    );
-  }
-
-  /** Xóa toàn bộ giỏ */
-  clearCart() {
-    return this.http.delete(`${BASE_URL}/clear`).pipe(
-      tap(() => {
-        this.cartItems = [];
-        this.cartSubject.next([]);
-      })
-    );
-  }
-
-  /** Tổng tiền giỏ hàng */
-  getTotal() {
-    return this.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  /**
+   * Xử lý lỗi tập trung.
+   */
+  private _handleError(error: any) {
+    console.error('Lỗi từ CartService:', error);
+    // Có thể thêm logic để hiển thị thông báo cho người dùng
+    return throwError(() => new Error('Có lỗi xảy ra, vui lòng thử lại.'));
   }
 }

@@ -3,7 +3,7 @@ package com.storeya.shop.controller;
 import com.storeya.shop.dto.PaymentDTO;
 import com.storeya.shop.service.auth.IAuthService;
 import com.storeya.shop.service.pay.IPayService;
-import com.storeya.shop.service.user.IUserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -21,13 +22,12 @@ public class PayController {
     private final IAuthService authService;
 
     @PostMapping
-    public ResponseEntity<PaymentDTO> createPayment(@AuthenticationPrincipal Jwt principal,
-                                                    @RequestBody PaymentDTO dto) {
-        Long userId = authService.getUserIdFromToken(principal);
-        dto.setUserId(userId);
-
-        PaymentDTO payment = payService.createPayment(dto);
-        return ResponseEntity.ok(payment);
+    public ResponseEntity<Map<String, Object>> createPayment(
+            @RequestBody PaymentDTO paymentDTO,
+            HttpServletRequest request
+    ) {
+        Map<String, Object> result = payService.createPayment(paymentDTO, request);
+        return ResponseEntity.ok(result);
     }
 
 

@@ -6,11 +6,12 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PaymentDTO {
     private Long id;
-    private Long userId;  // ánh xạ từ payment.user.id
+    private Long userId;
     private BigDecimal amount;
     private PaymentMethod method;
     private PaymentStatus status;
@@ -20,4 +21,5 @@ public class PaymentDTO {
     private String recipientEmail;
     private String details;
     private LocalDateTime paidAt;
+    private List<OrderItemDTO> items;
 }

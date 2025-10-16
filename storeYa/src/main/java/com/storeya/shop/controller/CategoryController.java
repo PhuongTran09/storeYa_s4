@@ -2,6 +2,7 @@ package com.storeya.shop.controller;
 
 import com.storeya.shop.entity.Category;
 import com.storeya.shop.service.category.ICategoryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,14 +10,12 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/categories")
 public class CategoryController {
 
     private final ICategoryService categoryService;
 
-    public CategoryController(ICategoryService categoryService) {
-        this.categoryService = categoryService;
-    }
 
     // Lấy tất cả categories
     @GetMapping("public/all")

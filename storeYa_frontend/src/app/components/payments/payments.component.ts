@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
-import { CartService } from '../../core/services/cart.service';
-import { PaymentDTO, PaymentService } from '../../core/services/payment.service';
-import { ToastService } from '../../core/services/toast.service';
-import { Router, RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { UserService } from '../../core/services/user.service';
-import { VndPipe } from '../../shared/pipes/truncate.pipe';
+import {Component} from '@angular/core';
+import {CartService} from '../../core/services/cart.service';
+import {PaymentDTO, PaymentService} from '../../core/services/payment.service';
+import {ToastService} from '../../core/services/toast.service';
+import {Router, RouterLink} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {UserService} from '../../core/services/user.service';
+import {VndPipe} from '../../shared/pipes/truncate.pipe';
 
 @Component({
   selector: 'app-payments',
@@ -48,7 +48,9 @@ export class PaymentsComponent {
     this.cartService.loadCart().subscribe({
       next: (res: any) => {
         this.cartItems = res.items ?? [];
-        this.total = this.cartService.getTotal();
+        this.cartService.total$.subscribe(total => {
+          this.total = total;
+        });
       },
       error: (err) => {
         console.error('❌ Load cart failed', err);

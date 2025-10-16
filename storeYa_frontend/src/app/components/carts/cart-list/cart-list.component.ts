@@ -1,11 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CartItem, CartService } from '../../../core/services/cart.service';
-import { Subject, takeUntil } from 'rxjs';
-import { CartItemComponent } from '../cart-item/cart-item.component';
-import { CommonModule } from '@angular/common';
-import { VndPipe } from '../../../shared/pipes/truncate.pipe';
-import { HeaderComponent } from '../../../shared/layout/navbar/navbar.component';
-import { RouterLink } from "@angular/router";
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {CartItem, CartService} from '../../../core/services/cart.service';
+import {Subject, takeUntil} from 'rxjs';
+import {CartItemComponent} from '../cart-item/cart-item.component';
+import {CommonModule} from '@angular/common';
+import {VndPipe} from '../../../shared/pipes/truncate.pipe';
+import {HeaderComponent} from '../../../shared/layout/navbar/navbar.component';
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-cart-list',
@@ -31,7 +31,9 @@ export class CartListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(items => {
         this.cartItems = items;
-        this.total = this.cartService.getTotal();
+        this.cartService.total$.subscribe(total => {
+          this.total = total;
+        });
       });
   }
 
@@ -51,9 +53,9 @@ export class CartListComponent implements OnInit, OnDestroy {
   removeItem(itemId: number) {
     this.cartService.removeItem(itemId).subscribe();
   }
-  
 
- 
+
+
 
   ngOnDestroy() {
     this.destroy$.next();

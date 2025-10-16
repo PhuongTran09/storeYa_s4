@@ -14,7 +14,7 @@
         Yêu em đi em nuôi
       </p>
       <button
-        class="px-10 py-4 bg-sky-500 text-white font-bold rounded-full text-lg 
+        class="px-10 py-4 bg-sky-500 text-white font-bold rounded-full text-lg
                        transition duration-300 transform hover:bg-sky-600 hover:scale-[1.05] shadow-xl focus:ring-4 focus:ring-sky-200">
         Khám Phá Ngay
       </button>
@@ -39,9 +39,9 @@
   <!-- Category selector -->
   <div class="flex gap-3 p-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
 
-    <button *ngFor="let c of categories" (click)="onCategoryChange(c.id)" class="px-4 py-2 text-sm rounded-full transition duration-300 transform 
-                   border border-gray-300 text-gray-700 hover:border-sky-500 hover:text-sky-500 
-                   disabled:opacity-75 disabled:cursor-not-allowed" [ngClass]="{ 
+    <button *ngFor="let c of categories" (click)="onCategoryChange(c.id)" class="px-4 py-2 text-sm rounded-full transition duration-300 transform
+                   border border-gray-300 text-gray-700 hover:border-sky-500 hover:text-sky-500
+                   disabled:opacity-75 disabled:cursor-not-allowed" [ngClass]="{
                 'bg-sky-500 text-white border-sky-500 font-semibold shadow-md hover:bg-sky-600 hover:text-white': c.id === selectedCategoryId,
                 'bg-white': c.id !== selectedCategoryId
             }">
@@ -50,22 +50,21 @@
 
   </div>
   <!-- Products scroll -->
-  <div *ngIf="filteredProducts.length > 0; else noProducts"
+  <div *ngIf="filteredProducts.length > 0"
     class="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 custom-scrollbar p-2">
     <product-card *ngFor="let product of filteredProducts" [product]="product"
       class="flex-shrink-0 snap-start transition duration-300 transform">
     </product-card>
   </div>
 
-  <ng-template #noProducts>
-    <p class="text-gray-500 mt-8 text-center w-full">
-      Hiện chưa có sản phẩm nào trong danh mục này.
-    </p>
-  </ng-template>
-
-
   <p *ngIf="products?.length === 0" class="text-gray-500 mt-8 text-center">
-    Hiện chưa có sản phẩm nào.
+    <i class="fa-solid fa-store-slash text-2xl mb-2"></i><br>
+    Hiện chưa có sản phẩm nào trong cửa hàng.
+  </p>
+
+  <p *ngIf="products && products.length > 0 && filteredProducts.length === 0" class="text-gray-500 mt-8 text-center">
+    <i class="fa-solid fa-magnifying-glass text-2xl mb-2"></i><br>
+    Không tìm thấy sản phẩm nào phù hợp với tìm kiếm của bạn.
   </p>
 </div>
 
