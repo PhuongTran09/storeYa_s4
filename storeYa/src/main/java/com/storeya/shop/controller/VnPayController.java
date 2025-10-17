@@ -1,6 +1,7 @@
 package com.storeya.shop.controller;
 
 import com.storeya.shop.dto.request.PaymentRequest;
+import com.storeya.shop.service.vnpay.IVnPayService;
 import com.storeya.shop.service.vnpay.VnPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +13,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/payment")
 public class VnPayController {
 
-    private final VnPayService vnPayService;
+    private final IVnPayService vnPayService;
 
     public VnPayController(VnPayService vnPayService) {
         this.vnPayService = vnPayService;

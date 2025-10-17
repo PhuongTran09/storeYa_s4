@@ -3,9 +3,11 @@ package com.storeya.shop.controller;
 import com.storeya.shop.dto.PaymentDTO;
 import com.storeya.shop.service.auth.IAuthService;
 import com.storeya.shop.service.pay.IPayService;
+import com.storeya.shop.service.vnpay.IVnPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,7 @@ public class PayController {
 
     private final IPayService payService;
     private final IAuthService authService;
+    private final IVnPayService  vnPayService;
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createPayment(
@@ -32,8 +35,9 @@ public class PayController {
 
 
     @PostMapping("/{paymentId}/confirm")
+    @PreAuthorize("hasRole('admin')")
     public PaymentDTO confirmPayment(@PathVariable Long paymentId) {
-        return payService.confirmPayment(paymentId, null);
+        return payService.confirmPayment(paymentId);
     }
 
     @GetMapping
@@ -46,5 +50,18 @@ public class PayController {
     @PostMapping("/{paymentId}/cancel")
     public PaymentDTO cancelPayment(@PathVariable Long paymentId) {
         return payService.cancelPayment(paymentId);
+    }
+
+    @GetMapping("/vnpay-ipn")
+    public ResponseEntity<Map<String, String>> handleVnPayIPN(HttpServletRequest request) {
+        // ✨ SECURE FLOW: Validate first, then process
+        Map<String, String> response = vnPayService.handleVnPayIPN(request);
+
+        if ("00".equals(response.get("RspCode"))) {
+            Map<String, String> vnPayParams = vnPayService.getVnPayParamsAsMap(request);
+            payService.processVnPayIPN(vnPayParams);
+        }
+
+        return ResponseEntity.ok(response);
     }
 }

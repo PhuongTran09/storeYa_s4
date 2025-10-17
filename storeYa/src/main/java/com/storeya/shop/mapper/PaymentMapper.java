@@ -17,17 +17,19 @@ public class PaymentMapper {
         if (payment == null) return null;
 
         PaymentDTO dto = new PaymentDTO();
-        dto.setId(payment.getId());
         dto.setUserId(payment.getUser() != null ? payment.getUser().getId() : null);
         dto.setAmount(payment.getAmount());
         dto.setMethod(payment.getMethod());
         dto.setStatus(payment.getStatus());
-        dto.setRecipientName(payment.getRecipientName());
-        dto.setRecipientPhone(payment.getRecipientPhone());
-        dto.setRecipientAddress(payment.getRecipientAddress());
-        dto.setRecipientEmail(payment.getRecipientEmail());
+        dto.setRecipientName(payment.getUser().getFirstName() + " " + payment.getUser().getLastName());
+        dto.setRecipientPhone(payment.getUser().getPhone());
+        dto.setRecipientAddress(payment.getUser().getAddress());
+        dto.setRecipientEmail(payment.getUser().getEmail());
         dto.setDetails(payment.getDetails());
         dto.setPaidAt(payment.getPaidAt());
+        dto.setCreatedAt(payment.getCreatedAt());
+        dto.setSetCode(payment.getSetCode());
+        dto.setUpdatedAt(payment.getUpdateAt());
 
         if (payment.getItems() != null && !payment.getItems().isEmpty()) {
             dto.setItems(payment.getItems().stream()
@@ -45,7 +47,6 @@ public class PaymentMapper {
         if (dto == null) return null;
 
         Payment payment = new Payment();
-        payment.setId(dto.getId());
         payment.setAmount(dto.getAmount());
         payment.setMethod(dto.getMethod());
         payment.setStatus(dto.getStatus());
@@ -55,6 +56,9 @@ public class PaymentMapper {
         payment.setRecipientEmail(dto.getRecipientEmail());
         payment.setDetails(dto.getDetails());
         payment.setPaidAt(dto.getPaidAt());
+        payment.setCreatedAt(dto.getCreatedAt());
+        payment.setSetCode(dto.getSetCode());
+        payment.setUpdateAt(dto.getUpdatedAt());
 
         if (dto.getUserId() != null) {
             User user = new User();

@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.storeya.shop.utils.StringRandom.generateStringRandom;
+
 @Service
 @RequiredArgsConstructor
 public class PayService implements IPayService {
@@ -45,15 +47,31 @@ public class PayService implements IPayService {
         Payment payment = paymentMapper.toEntity(dto);
         payment.setUser(user);
         payment.setAmount(BigDecimal.valueOf(total));
-        payment.setPaidAt(LocalDateTime.now());
-        // Set recipient info logic...
+        payment.setSetCode(generateCodeId());
+        payment.setRecipientName(
+                dto.getRecipientName() != null && !dto.getRecipientName().isBlank()
+                        ? dto.getRecipientName()
+                        : user.getFirstName() + " " + user.getLastName()
+        );
+        payment.setRecipientPhone(
+                dto.getRecipientPhone() != null && !dto.getRecipientPhone().isBlank()
+                        ? dto.getRecipientPhone()
+                        : user.getPhone()
+        );
+        payment.setRecipientAddress(
+                dto.getRecipientAddress() != null && !dto.getRecipientAddress().isBlank()
+                        ? dto.getRecipientAddress()
+                        : user.getAddress()
+        );
+        payment.setRecipientEmail(
+                dto.getRecipientEmail() != null && !dto.getRecipientEmail().isBlank()
+                        ? dto.getRecipientEmail()
+                        : user.getEmail()
+        );
 
         for (CartItem cartItem : cart.getItems()) {
             Product product = cartItem.getProduct();
-            if (product.getStock() < cartItem.getQuantity()) {
-                throw new RuntimeException("Product stock is not enough: " + product.getName());
-            }
-            product.setStock(product.getStock() - cartItem.getQuantity());
+            product.setStock(cartItem.getQuantity());
             productRepository.save(product);
             OrderItem orderItem = new OrderItem();
             orderItem.setProduct(product);
@@ -68,6 +86,7 @@ public class PayService implements IPayService {
 
         if (dto.getMethod() == PaymentMethod.COD) {
             payment.setStatus(PaymentStatus.PENDING);
+            payment.setPaidAt(null);
             payment.setDetails("Thanh toán khi nhận hàng (COD)");
             Payment savedPayment = paymentRepository.save(payment);
             clearUserCart(user.getId());
@@ -77,7 +96,7 @@ public class PayService implements IPayService {
             payment.setDetails("Chờ thanh toán qua cổng VNPay");
             Payment pendingPayment = paymentRepository.save(payment);
             String paymentUrl = vnPayService.createVnPayPayment(request, pendingPayment.getAmount().longValue(),
-                    "Thanh toan don hang #" + pendingPayment.getId(),String.valueOf(pendingPayment.getId()));
+                    "Thanh toan don hang #" + pendingPayment.getSetCode(),String.valueOf(pendingPayment.getId()));
             response.put("paymentUrl", paymentUrl);
         }
 
@@ -88,6 +107,7 @@ public class PayService implements IPayService {
     @Transactional
     public void processVnPayIPN(Map<String, String> vnPayParams) {
         String orderIdStr = vnPayParams.get("vnp_TxnRef");
+        String transactionIdFromVnPay = vnPayParams.get("vnp_TransactionNo");
         String responseCode = vnPayParams.get("vnp_ResponseCode");
         long amountFromVnPay = Long.parseLong(vnPayParams.get("vnp_Amount")) / 100;
         Payment payment = paymentRepository.findById(Long.parseLong(orderIdStr)).orElse(null);
@@ -98,25 +118,27 @@ public class PayService implements IPayService {
         if (payment.getAmount().longValue() != amountFromVnPay) {
             payment.setStatus(PaymentStatus.CANCELLED);
             payment.setDetails("Payment failed: Amount mismatch.");
-            // TODO: Restore product stock
+
             paymentRepository.save(payment);
             return;
         }
 
         if ("00".equals(responseCode)) {
             payment.setStatus(PaymentStatus.PAID);
+            payment.setPaidAt(LocalDateTime.now());
             payment.setDetails("Thanh toán thành công qua VNPay");
             clearUserCart(payment.getUser().getId());
+            payment.setTransactionId(transactionIdFromVnPay);
         } else {
             payment.setStatus(PaymentStatus.CANCELLED);
             payment.setDetails("Thanh toán qua VNPay thất bại");
-            // TODO: Restore product stock
+
         }
         paymentRepository.save(payment);
     }
 
     @Override
-    public PaymentDTO confirmPayment(Long paymentId, String transactionId) {
+    public PaymentDTO confirmPayment(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
         payment.setStatus(PaymentStatus.PAID);
@@ -128,6 +150,12 @@ public class PayService implements IPayService {
     public PaymentDTO cancelPayment(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
+        if(!payment.getId().equals(payment.getUser().getId())) {
+             throw new SecurityException("Dont have permission to cancel this Payment");
+        }
+        if(payment.getStatus() != PaymentStatus.PAID) {
+            throw new IllegalStateException("Payment is not completed yet");
+        }
         payment.setStatus(PaymentStatus.CANCELLED);
         return paymentMapper.toDTO(paymentRepository.save(payment));
     }
@@ -149,5 +177,8 @@ public class PayService implements IPayService {
         }
     }
 
-    // ... other methods (confirm, cancel, etc.)
+    private String generateCodeId() {
+        String random = generateStringRandom(4);
+        return "HD"+random;
+    }
 }

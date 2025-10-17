@@ -10,8 +10,8 @@ import java.util.List;
 
 @Data
 public class PaymentDTO {
-    private Long id;
     private Long userId;
+    private String setCode;
     private BigDecimal amount;
     private PaymentMethod method;
     private PaymentStatus status;
@@ -21,5 +21,8 @@ public class PaymentDTO {
     private String recipientEmail;
     private String details;
     private LocalDateTime paidAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+    private String  transactionId;
     private List<OrderItemDTO> items;
 }

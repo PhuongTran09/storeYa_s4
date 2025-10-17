@@ -20,22 +20,20 @@ export interface CartItem {
   providedIn: 'root'
 })
 export class CartService {
+   // 🟩 Khởi tạo BehaviorSubject trước
+  private cartSubject = new BehaviorSubject<CartItem[]>([]);
+  cart$ = this.cartSubject.asObservable();
+
+  // 🟩 Các observable phụ thuộc vào cart$
   total$ = this.cart$.pipe(
     map(items => items.reduce((sum, item) => sum + item.price * item.quantity, 0))
   );
 
-
-  cart$ = this.cartSubject.asObservable();
-  /** * "Selector" cho tổng số lượng sản phẩm trong giỏ.
-   */
   itemCount$ = this.cart$.pipe(
     map(items => items.reduce((sum, item) => sum + item.quantity, 0))
   );
-  // State chính của giỏ hàng
-  private cartSubject = new BehaviorSubject<CartItem[]>([]);
 
   constructor(private http: HttpClient) {
-    // Tải giỏ hàng lần đầu khi service được khởi tạo
     this.loadCart().subscribe();
   }
 

@@ -67,9 +67,9 @@
                             }"
                            class="inline-flex items-center w-full justify-center sm:w-auto px-3 py-1 text-xs font-bold rounded-full">
                             <i *ngIf="p.status === 'PENDING'" class="fa-solid fa-hourglass-half mr-1.5"></i>
-                            <i *ngIf="p.status === 'SUCCESS'" class="fa-solid fa-circle-check mr-1.5"></i>
+                            <i *ngIf="p.status === 'PAID'" class="fa-solid fa-circle-check mr-1.5"></i>
                             <i *ngIf="p.status === 'FAILED'" class="fa-solid fa-circle-xmark mr-1.5"></i>
-                           {{ p.status === 'PENDING' ? 'ĐANG CHỜ' : (p.status === 'SUCCESS' ? 'HOÀN THÀNH' : 'THẤT BẠI') }}
+                           {{ p.status === 'PENDING' ? 'CHƯA THANH TOÁN' : (p.status === 'PAID' ? 'ĐÃ THANH TOÁN' : 'ĐÃ HUỶ') }}
                         </span>
           </div>
 
