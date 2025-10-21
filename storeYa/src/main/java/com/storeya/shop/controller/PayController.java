@@ -27,8 +27,11 @@ public class PayController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> createPayment(
             @RequestBody PaymentDTO paymentDTO,
-            HttpServletRequest request
+            HttpServletRequest request,
+            @AuthenticationPrincipal Jwt principal
     ) {
+        Long userId = authService.getUserIdFromToken(principal);
+        paymentDTO.setUserId(userId);
         Map<String, Object> result = payService.createPayment(paymentDTO, request);
         return ResponseEntity.ok(result);
     }

@@ -6,8 +6,8 @@
 
             <div class="flex items-center justify-between text-xl font-bold border-b pb-4 mb-3">
                 <span class="text-gray-900">Thông tin nhận hàng</span>
-                <a href="#" class="text-sky-600 text-sm font-medium hover:text-sky-700 transition">
-                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
+                <a routerLink="/home" class="text-sky-600 text-sm font-medium hover:text-sky-700 transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i>Về trang chính
                 </a>
             </div>
 
@@ -58,11 +58,11 @@
 
             <div class="space-y-3">
                 <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer transition"
-                    [ngClass]="{'bg-sky-50 border-sky-500': payment.method === 'MOMO', 'border-gray-300 hover:border-sky-300': payment.method !== 'MOMO'}">
+                    [ngClass]="{'bg-sky-50 border-sky-500': payment.method === 'VNPay', 'border-gray-300 hover:border-sky-300': payment.method !== 'VNPay'}">
                     <div class="flex items-center gap-3">
-                        <input type="radio" [(ngModel)]="payment.method" name="method" value="MOMO"
+                        <input type="radio" [(ngModel)]="payment.method" name="method" value="VNPay"
                             class="form-radio text-sky-600 w-5 h-5" />
-                        <span class="font-medium text-gray-700">Thanh toán qua ví điện tử MoMo</span>
+                        <span class="font-medium text-gray-700">Thanh toán qua ví điện tử VNPay</span>
                     </div>
                     <i class="fa-solid fa-wallet text-xl text-sky-600"></i>
                 </label>

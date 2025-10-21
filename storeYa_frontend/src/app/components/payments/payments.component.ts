@@ -20,7 +20,7 @@ export class PaymentsComponent {
   total = 0;
 
   payment: PaymentDTO = {
-    method: 'COD',
+    method: '',
     recipientName: '',
     recipientPhone: '',
     recipientAddress: '',
@@ -80,11 +80,20 @@ export class PaymentsComponent {
       return;
     }
 
+     if (!this.payment.method) {
+      this.toast.show('Vui lòng chọn phương thức thanh toán','warning');
+      return;
+    }
+
     this.loading = true;
     this.paymentService.createPayment(this.payment).subscribe({
-      next: () => {
-        this.toast.show('Đặt hàng thành công!','success');
-        this.router.navigate(['/orders']);
+     next: (response) => {
+        // ... (logic xử lý response của bạn giữ nguyên) ...
+        if (response.paymentUrl) {
+          window.location.href = response.paymentUrl;
+        } else {
+          this.router.navigate(['/checkout-success']);
+        }
       },
       error: (err) => {
         console.error('Create payment failed', err);

@@ -28,7 +28,6 @@ public class CartService implements ICartService {
 
     private void updateCartTotal(Cart cart) {
         double total = cart.getItems().stream()
-                // NHÂN ĐƠN GIÁ VỚI SỐ LƯỢNG
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())
                 .sum();
         cart.setTotalPrice(total);
@@ -46,57 +45,40 @@ public class CartService implements ICartService {
     @Override
     @Transactional
     public Cart addToCart(Long userId, Long productId, int quantity) {
-        if (quantity == 0) {
-            throw new IllegalArgumentException("Quantity cannot be zero.");
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero.");
         }
 
         Cart cart = getOrCreateCart(userId);
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
+        // Kiểm tra tồn kho, không trừ stock ở đây
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Sản phẩm '" + product.getName() + "' không đủ hàng. Còn lại: " + product.getStock());
+        }
+
+        // Kiểm tra nếu sản phẩm đã có trong giỏ
         CartItem existingItem = cart.getItems().stream()
                 .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst()
                 .orElse(null);
 
-        int oldQuantity = (existingItem != null) ? existingItem.getQuantity() : 0;
-        int newQuantity = oldQuantity + quantity;
-
-        if (newQuantity <= 0) {
-            // Nếu số lượng mới <= 0, xóa sản phẩm khỏi giỏ
-            if (existingItem != null) {
-                product.setStock(product.getStock() + oldQuantity); // Hoàn trả lại kho
-                cart.getItems().remove(existingItem);
-                cartItemRepository.delete(existingItem);
-            }
+        if (existingItem == null) {
+            existingItem = new CartItem();
+            existingItem.setCart(cart);
+            existingItem.setProduct(product);
+            existingItem.setPrice(product.getPrice());
+            existingItem.setQuantity(quantity);
+            cart.getItems().add(existingItem);
         } else {
-            // Tính toán sự thay đổi số lượng cần lấy từ kho
-            int quantityChange = newQuantity - oldQuantity;
-
-            // Kiểm tra xem kho có đủ cho sự thay đổi này không
-            if (product.getStock() < quantityChange) {
-                throw new RuntimeException("Not enough stock for product: " + product.getName());
-            }
-
-            if (existingItem == null) {
-                existingItem = new CartItem();
-                existingItem.setCart(cart);
-                existingItem.setProduct(product);
-                existingItem.setPrice(product.getPrice()); // Lưu đơn giá tại thời điểm thêm
-                cart.getItems().add(existingItem);
-            }
-
-            existingItem.setQuantity(newQuantity);
-            product.setStock(product.getStock() - quantityChange); // Chỉ trừ đi phần thay đổi
-
-            cartItemRepository.save(existingItem);
+            existingItem.setQuantity(existingItem.getQuantity() + quantity);
         }
 
-        productRepository.save(product);
-        updateCartTotal(cart); // Gọi phương thức đã sửa lỗi
+        cartItemRepository.save(existingItem);
+        updateCartTotal(cart);
         return cartRepository.save(cart);
     }
-
 
     @Override
     public Cart getCart(Long userId) {
@@ -105,63 +87,41 @@ public class CartService implements ICartService {
 
     @Override
     @Transactional
-    public Cart updateItem(Long userId, Long productId, int quantity) {
+    public Cart updateItem(Long userId, Long cartItemId, int quantity) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId));
 
-        // Sửa lại logic tìm kiếm cho đúng
         CartItem item = cart.getItems().stream()
-                .filter(i -> i.getId().equals(productId))
+                .filter(i -> i.getId().equals(cartItemId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found in cart"));
-
-        Product product = item.getProduct();
-        int oldQuantity = item.getQuantity();
+                .orElseThrow(() -> new RuntimeException("Item with id " + cartItemId + " not found in cart"));
 
         if (quantity <= 0) {
-            // Nếu số lượng mới là 0 hoặc âm -> Xóa sản phẩm khỏi giỏ
-            product.setStock(product.getStock() + oldQuantity); // Hoàn trả toàn bộ số lượng cũ vào kho
             cart.getItems().remove(item);
             cartItemRepository.delete(item);
         } else {
-            // Logic tồn kho mới, dựa trên sự thay đổi
-            int quantityChange = quantity - oldQuantity;
-
-
-            if (product.getStock() < quantityChange) {
-                throw new RuntimeException("Not enough stock for product: " + product.getName() +
-                        ". Available: " + product.getStock() + ", Required change: " + quantityChange);
+            Product product = item.getProduct();
+            if (product.getStock() < quantity) {
+                throw new RuntimeException("Không đủ hàng. Còn lại: " + product.getStock());
             }
-
-            // Cập nhật số lượng mới cho item
             item.setQuantity(quantity);
-            // Cập nhật tồn kho dựa trên sự thay đổi
-            product.setStock(product.getStock() - quantityChange);
-
             cartItemRepository.save(item);
         }
 
-        productRepository.save(product);
-        updateCartTotal(cart); // Gọi phương thức tính tổng tiền đã được sửa lỗi
+        updateCartTotal(cart);
         return cartRepository.save(cart);
     }
-
 
     @Override
     @Transactional
     public Cart removeItem(Long userId, Long itemId) {
         Cart cart = getOrCreateCart(userId);
-
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getId().equals(itemId))
                 .findFirst()
                 .orElse(null);
 
         if (item == null) return cart;
-
-        Product product = item.getProduct();
-        product.setStock(product.getStock() + item.getQuantity());
-        productRepository.save(product);
 
         cart.getItems().remove(item);
         cartItemRepository.delete(item);
@@ -170,18 +130,10 @@ public class CartService implements ICartService {
         return cartRepository.save(cart);
     }
 
-    // 🟢 Xóa toàn bộ giỏ hàng
     @Override
     @Transactional
     public void clearCart(Long userId) {
         Cart cart = getOrCreateCart(userId);
-
-        for (CartItem item : cart.getItems()) {
-            Product product = item.getProduct();
-            product.setStock(product.getStock() + item.getQuantity());
-            productRepository.save(product);
-        }
-
         cartItemRepository.deleteAll(cart.getItems());
         cart.getItems().clear();
         cart.setTotalPrice(0.0);

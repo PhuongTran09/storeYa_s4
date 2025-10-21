@@ -24,10 +24,13 @@
           <div class="space-y-0.5">
             <p class="text-base font-bold text-sky-600 flex items-center gap-2">
               <i class="fa-solid fa-tag text-xs"></i>
-              Đơn hàng #{{ p.id }}
+              Đơn hàng {{ p.setCode }}
             </p>
             <p class="text-xs text-slate-500">
-              Ngày đặt: <span class="font-medium text-slate-600">{{ p.paidAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              Ngày đặt: <span class="font-medium text-slate-600">{{ p.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </p>
+             <p class="text-xs text-slate-500">
+              Ngày thanh toán: <span class="font-medium text-slate-600">{{ p.paidAt | date: 'dd/MM/yyyy HH:mm' }}</span>
             </p>
           </div>
           <div class="text-right mt-2 sm:mt-0">
@@ -62,14 +65,14 @@
                          <span
                            [ngClass]="{
                                 'bg-yellow-100 text-yellow-800': p.status === 'PENDING',
-                                'bg-green-100 text-green-800': p.status === 'SUCCESS',
+                                'bg-green-100 text-green-800': p.status === 'PAID',
                                 'bg-red-100 text-red-800': p.status === 'FAILED'
                             }"
                            class="inline-flex items-center w-full justify-center sm:w-auto px-3 py-1 text-xs font-bold rounded-full">
                             <i *ngIf="p.status === 'PENDING'" class="fa-solid fa-hourglass-half mr-1.5"></i>
                             <i *ngIf="p.status === 'PAID'" class="fa-solid fa-circle-check mr-1.5"></i>
                             <i *ngIf="p.status === 'FAILED'" class="fa-solid fa-circle-xmark mr-1.5"></i>
-                           {{ p.status === 'PENDING' ? 'CHƯA THANH TOÁN' : (p.status === 'PAID' ? 'ĐÃ THANH TOÁN' : 'ĐÃ HUỶ') }}
+                           {{ p.status === 'PENDING' ? 'CHỜ XÁC NHẬN' : (p.status === 'PAID' ? 'ĐÃ THANH TOÁN' : 'ĐÃ HUỶ') }}
                         </span>
           </div>
 

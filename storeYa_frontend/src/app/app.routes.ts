@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guards';
+import { authGuard, paymentResultGuard } from './core/guards/auth.guards';
 import { NotFoundComponent } from './page/not-found/not-found.component';
 import { ProductDetailComponent } from './components/product/product-detail/product-detail.component';
 import { CartListComponent } from './components/carts/cart-list/cart-list.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { PaymentsComponent } from './components/payments/payments.component';
 import { UserListPayComponent } from './components/payments/user-list-pay/user-list-pay.component';
+import { PaymentResultComponent } from './page/payment-result/payment-result.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -24,7 +25,13 @@ export const routes: Routes = [
       { path: 'cart', component: CartListComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'payments', component: PaymentsComponent },
-       { path: 'history-payment', component: UserListPayComponent }
+      { path: 'history-payment', component: UserListPayComponent },
+
+
+      {
+        canActivate: [paymentResultGuard],
+        path: 'payment-result', component: PaymentResultComponent
+      }
 
     ]
 
