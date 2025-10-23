@@ -25,4 +25,8 @@ public class VnPayConfig {
     @Value("${vnpay.version}")
     private String vnp_Version;
 
+    @Value("${vnpay.apiUrl}")
+    public String vnp_ApiUrl;
+
+
 }

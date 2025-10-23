@@ -5,19 +5,28 @@ import com.storeya.shop.entity.*;
 import com.storeya.shop.enums.PaymentMethod;
 import com.storeya.shop.enums.PaymentStatus;
 import com.storeya.shop.mapper.PaymentMapper;
-import com.storeya.shop.repository.*;
+import com.storeya.shop.repository.CartRepository;
+import com.storeya.shop.repository.PaymentRepository;
+import com.storeya.shop.repository.ProductRepository;
+import com.storeya.shop.repository.UserRepository;
 import com.storeya.shop.service.vnpay.IVnPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.storeya.shop.utils.StringRandom.generateStringRandom;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PayService implements IPayService {
@@ -175,9 +184,10 @@ public class PayService implements IPayService {
 
     @Override
     @Transactional
-    public Map<String, Object> retryPayment(Long paymentId, HttpServletRequest request) {
-        Payment payment = paymentRepository.findById(paymentId)
+    public Map<String, Object> retryPayment(PaymentDTO dto, HttpServletRequest request) {
+        Payment payment = paymentRepository.findBySetCode(dto.getSetCode())
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
+
 
         if (payment.getStatus() == PaymentStatus.PAID)
             throw new RuntimeException("Đơn hàng đã được thanh toán.");
@@ -186,16 +196,19 @@ public class PayService implements IPayService {
         if (payment.getMethod() != PaymentMethod.VNPay)
             throw new RuntimeException("Đơn hàng không hỗ trợ thanh toán lại qua VNPay.");
 
+        if (payment.getStatus() == PaymentStatus.REFUNDED || payment.getStatus() == PaymentStatus.SHIPPING)
+            throw new RuntimeException("Đơn hàng không thể thanh toán lại ở trạng thái hiện tại.");
+
+
         String paymentUrl = vnPayService.createVnPayPayment(
                 request,
-                payment.getAmount().longValue(),
-                "Thanh toán lại đơn hàng #" + payment.getSetCode(),
-                String.valueOf(payment.getId())
+                payment.getAmount().longValue(), "Thanh toán lại đơn hàng #" + dto.getSetCode(), String.valueOf(payment.getId()) // Lấy từ entity
         );
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("paymentUrl", paymentUrl);
-        response.put("paymentCode", payment.getSetCode());
+        response.put("paymentCode", dto.getSetCode());
         return response;
     }
 
@@ -226,13 +239,96 @@ public class PayService implements IPayService {
 
     @Override
     @Transactional
-    public PaymentDTO cancelPayment(Long paymentId) {
-        Payment payment = paymentRepository.findById(paymentId)
+    public PaymentDTO cancelPayment(PaymentDTO dto, Long userId, HttpServletRequest request) {
+        Payment payment = paymentRepository.findBySetCode(dto.getSetCode())
                 .orElseThrow(() -> new RuntimeException("Payment not found"));
-        payment.setStatus(PaymentStatus.CANCELLED);
-        payment.setDetails("Đơn hàng bị hủy bởi người dùng");
-        return paymentMapper.toDTO(paymentRepository.save(payment));
+
+        // 1. Check Ownership
+        if (!Objects.equals(payment.getUser() == null ? null : payment.getUser().getId(), userId)) {
+            throw new SecurityException("User does not have permission to cancel this payment.");
+        }
+
+        PaymentStatus currentStatus = payment.getStatus();
+
+        // 2. Nếu đã hủy hoặc đã hoàn tiền thì return luôn
+        if (currentStatus == PaymentStatus.CANCELLED || currentStatus == PaymentStatus.REFUNDED) {
+            log.warn("Attempted to cancel already cancelled/refunded payment SetCode: {}", dto.getSetCode());
+            return paymentMapper.toDTO(payment);
+        }
+
+        // 3. VNPay refund
+        if (payment.getMethod() == PaymentMethod.VNPay &&
+                (currentStatus == PaymentStatus.PAID || currentStatus == PaymentStatus.WAITING_FOR_SHIPPING)) {
+
+            log.info("Initiating VNPay refund for SetCode: {}", dto.getSetCode());
+            try {
+                String orderId = String.valueOf(payment.getId());
+                String originalTransactionNo = payment.getTransactionId();
+                LocalDateTime createdAt = payment.getCreatedAt();
+
+                if (originalTransactionNo == null || createdAt == null) {
+                    throw new IllegalStateException("Missing original transaction info for refund.");
+                }
+
+                String originalCreateDate = createdAt.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+                String refundOrderInfo = "Huy don hang " + payment.getSetCode();
+                long amountToRefund = payment.getAmount().longValue() * 100; // VNPay expects cents
+
+                Map<String, String> refundResponse = vnPayService.refundPayment(
+                        request,
+                        amountToRefund,
+                        refundOrderInfo,
+                        orderId,
+                        originalTransactionNo,
+                        originalCreateDate
+                );
+
+                log.info("VNPay refund response for SetCode {}: {}", payment.getSetCode(), refundResponse);
+
+                String responseCode = refundResponse.getOrDefault("vnp_ResponseCode",
+                        refundResponse.getOrDefault("vnp_responsecode", ""));
+                log.info("VNPay repsoneseCode: {}", responseCode);
+                if ("00".equals(responseCode)) {
+                    payment.setStatus(PaymentStatus.REFUNDED);
+                    payment.setDetails("Hoàn tiền VNPay thành công. TransactionNo: " +
+                            refundResponse.getOrDefault("vnp_TransactionNo", "unknown"));
+                    payment.setTransactionId(refundResponse.getOrDefault("vnp_TransactionNo", payment.getTransactionId()));
+                    log.info("VNPay refund SUCCESS for SetCode: {}", payment.getSetCode());
+                } else {
+                    String errorMessage = "Hoàn tiền VNPay thất bại: " + refundResponse.getOrDefault("vnp_Message", "Unknown error");
+                    payment.setDetails(errorMessage);
+                    log.error("VNPay refund FAILED for SetCode: {}. Reason: {}", payment.getSetCode(), errorMessage);
+                    throw new RuntimeException(errorMessage);
+                }
+
+            } catch (Exception e) {
+                log.error("Error during VNPay refund process for SetCode: {}", payment.getSetCode(), e);
+                throw new RuntimeException("Lỗi khi xử lý hoàn tiền VNPay: " + e.getMessage(), e);
+            }
+
+        } else {
+            // 4. Hủy đơn bình thường
+            payment.setStatus(PaymentStatus.CANCELLED);
+            payment.setDetails("Đơn hàng đã được hủy.");
+            log.info("Payment SetCode: {} cancelled (Non-VNPay).", payment.getSetCode());
+        }
+
+        // 5. Hoàn stock nếu cần
+        try {
+            restoreProductStock(payment);
+        } catch (Exception e) {
+            log.error("Error while restoring product stock for SetCode {}: {}", payment.getSetCode(), e.getMessage(), e);
+            payment.setDetails((payment.getDetails() == null ? "" : payment.getDetails() + " | ") +
+                    "Restore stock failed: " + e.getMessage());
+        }
+
+        payment.setUpdateAt(LocalDateTime.now());
+        Payment saved = paymentRepository.save(payment);
+        return paymentMapper.toDTO(saved);
     }
+
+
+
 
     @Override
     public List<PaymentDTO> getPaymentsByUser(Long userId) {
@@ -253,5 +349,29 @@ public class PayService implements IPayService {
 
     private String generateCodeId() {
         return "HD" + generateStringRandom(4);
+    }
+
+    private void restoreProductStock(Payment payment) {
+        if (payment.getItems() == null) return; // Kiểm tra nếu không có sản phẩm
+
+        log.info("Restoring stock for Payment ID: {}", payment.getId()); // Thêm log
+
+        for (OrderItem item : payment.getItems()) {
+            Product product = item.getProduct();
+            if (product != null) {
+                // Lấy số lượng hiện tại
+                int currentStock = product.getStock();
+                // Lấy số lượng cần hoàn trả
+                int quantityToRestore = item.getQuantity();
+
+                // Cộng trả lại số lượng đã mua
+                product.setStock(currentStock + quantityToRestore);
+                productRepository.save(product); // Lưu lại thay đổi vào database
+
+                log.info("  - Restored stock for Product ID {}: {} + {} = {}", product.getId(), currentStock, quantityToRestore, product.getStock()); // Log chi tiết
+            } else {
+                log.warn("  - Could not restore stock for OrderItem ID {} because Product was null.", item.getId()); // Cảnh báo nếu product null
+            }
+        }
     }
 }

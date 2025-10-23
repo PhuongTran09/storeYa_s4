@@ -10,6 +10,7 @@ import java.util.List;
 
 @Data
 public class PaymentDTO {
+    private Long id;
     private Long userId;
     private String setCode;
     private BigDecimal amount;

@@ -6,5 +6,6 @@ public enum PaymentStatus {
     WAITING_FOR_SHIPPING,
     SHIPPING,
     COMPLETED,
-    CANCELLED
+    CANCELLED,
+    REFUNDED,
 }

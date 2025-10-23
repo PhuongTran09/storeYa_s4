@@ -50,10 +50,27 @@ public class PayController {
         return ResponseEntity.ok(payments);
     }
 
-    @PostMapping("/{paymentId}/cancel")
-    public PaymentDTO cancelPayment(@PathVariable Long paymentId) {
-        return payService.cancelPayment(paymentId);
+    @PostMapping("/retry")
+    public  ResponseEntity<Map<String, Object>> retryPayment(@RequestBody PaymentDTO paymentDTO, HttpServletRequest request, @AuthenticationPrincipal Jwt principal) {
+        Long userId = authService.getUserIdFromToken(principal);
+        paymentDTO.setUserId(userId);
+        Map<String, Object> result = payService.retryPayment(paymentDTO, request);
+        return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<PaymentDTO> cancelPayment(
+            @RequestBody PaymentDTO paymentDTO,
+            HttpServletRequest request,
+            @AuthenticationPrincipal Jwt principal
+    ) {
+        Long userId = authService.getUserIdFromToken(principal);
+        paymentDTO.setUserId(userId);
+
+        PaymentDTO result = payService.cancelPayment(paymentDTO,userId,request);
+        return ResponseEntity.ok(result);
+    }
+
 
     @GetMapping("/vnpay-ipn")
     public ResponseEntity<Map<String, String>> handleVnPayIPN(HttpServletRequest request) {

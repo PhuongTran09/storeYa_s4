@@ -1,7 +1,6 @@
 package com.storeya.shop.service.vnpay;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.context.annotation.Bean;
 
 import java.util.Map;
 
@@ -11,4 +10,6 @@ public interface IVnPayService {
 
     Map<String, String> handleVnPayIPN(HttpServletRequest request);
     Map<String, String>  getVnPayParamsAsMap(HttpServletRequest request);
+
+    Map<String, String>  refundPayment(HttpServletRequest request, long amount, String orderInfo, String orderId, String originalTransactionNo, String originalCreateDate);
 }
