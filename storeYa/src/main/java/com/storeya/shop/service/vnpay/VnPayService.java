@@ -134,7 +134,7 @@ public class VnPayService implements IVnPayService {
             String vnp_Version = config.getVnp_Version();
             String vnp_Command = "refund";
             String vnp_TmnCode = config.getVnp_TmnCode();
-            String vnp_TransactionType = "02"; // 02 = full refund
+            String vnp_TransactionType = "02";
             String vnp_Amount = String.valueOf(amount);
             String vnp_CreateBy = "system";
             String vnp_CreateDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -168,7 +168,7 @@ public class VnPayService implements IVnPayService {
                         hashData.append("&");
                         query.append("&");
                     }
-                    hashData.append(fieldName).append("=").append(fieldValue); // raw
+                    hashData.append(fieldName).append("=").append(fieldValue); 
                     query.append(fieldName).append("=")
                             .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8));
                 }
