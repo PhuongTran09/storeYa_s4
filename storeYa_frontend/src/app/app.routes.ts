@@ -22,10 +22,12 @@ export const routes: Routes = [
       },
 
       { path: 'product/:id', component: ProductDetailComponent },
-      { path: 'cart', component: CartListComponent },
-      { path: 'profile', component: ProfileComponent },
-      { path: 'payments', component: PaymentsComponent },
-      { path: 'history-payment', component: UserListPayComponent },
+      // These pages all call authenticated APIs. Without the guard an anonymous
+      // visitor reached the component and got a wall of 401s instead of the login modal.
+      { path: 'cart', canActivate: [authGuard], component: CartListComponent },
+      { path: 'profile', canActivate: [authGuard], component: ProfileComponent },
+      { path: 'payments', canActivate: [authGuard], component: PaymentsComponent },
+      { path: 'history-payment', canActivate: [authGuard], component: UserListPayComponent },
 
 
       {

@@ -88,12 +88,15 @@ export class PaymentsComponent {
     this.loading = true;
     this.paymentService.createPayment(this.payment).subscribe({
      next: (response) => {
-        // ... (logic xử lý response của bạn giữ nguyên) ...
         if (response.paymentUrl) {
           window.location.href = response.paymentUrl;
-        } else {
-          this.router.navigate(['/checkout-success']);
+          return;
         }
+        this.loading = false;
+        // /checkout-success was never declared in app.routes, so a successful COD order
+        // landed on the 404 page. history-payment is the real order list.
+        const setCode = response.payment?.setCode;
+        this.router.navigate(['/history-payment'], setCode ? { queryParams: { order: setCode } } : {});
       },
       error: (err) => {
         console.error('Create payment failed', err);

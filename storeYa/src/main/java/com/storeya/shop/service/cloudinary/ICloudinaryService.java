@@ -1,6 +1,5 @@
 package com.storeya.shop.service.cloudinary;
 
-import org.springframework.web.multipart.MultipartFile;
 
 public interface ICloudinaryService {
 

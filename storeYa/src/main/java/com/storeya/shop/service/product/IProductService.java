@@ -1,10 +1,7 @@
 package com.storeya.shop.service.product;
 
 import com.storeya.shop.dto.ProductDTO;
-import com.storeya.shop.entity.Product;
 import org.springframework.data.domain.Page;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;

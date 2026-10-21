@@ -4,7 +4,6 @@ import com.storeya.shop.dto.CartDTO;
 import com.storeya.shop.dto.CartItemDTO;
 import com.storeya.shop.entity.Cart;
 import com.storeya.shop.entity.CartItem;
-import com.storeya.shop.entity.ProductImage;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

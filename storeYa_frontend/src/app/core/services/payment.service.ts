@@ -58,9 +58,11 @@ export class PaymentService {
     );
   }
 
-  /** ❌ Hủy thanh toán (cho user hoặc admin) */
-  cancelPayment(paymentId: number): Observable<PaymentDTO> {
-    return this.http.post<PaymentDTO>(`${BASE_URL}/${paymentId}/cancel`, {}).pipe(
+  /** ❌ Hủy thanh toán (cho user hoặc admin)
+   *  Backend looks the order up by setCode (PayController#cancelPayment → POST /payments/cancel
+   *  with a PaymentDTO body), not by numeric id, so the old /{id}/cancel call only 404'd. */
+  cancelPayment(setCode: string): Observable<PaymentDTO> {
+    return this.http.post<PaymentDTO>(`${BASE_URL}/cancel`, { setCode }).pipe(
       catchError(this.handleError) // ✨ Thêm xử lý lỗi
     );
   }

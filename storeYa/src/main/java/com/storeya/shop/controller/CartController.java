@@ -41,21 +41,24 @@ public class CartController {
         return ResponseEntity.ok(cartMapper.toDTO(cart));
     }
 
-    @PutMapping("/items/update/{productId}")
+    @PutMapping("/items/update/{cartItemId}")
     public ResponseEntity<CartDTO> updateItem(@AuthenticationPrincipal Jwt principal,
-                                              @PathVariable Long productId,
+                                              @PathVariable Long cartItemId,
                                               @RequestParam int quantity) {
         Long userId = getUserId(principal);
-        Cart cart = cartService.updateItem(userId, productId, quantity);
+        Cart cart = cartService.updateItem(userId, cartItemId, quantity);
         return ResponseEntity.ok(cartMapper.toDTO(cart));
     }
 
-    @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<Cart> removeItem(@AuthenticationPrincipal Jwt principal,
-                                           @PathVariable Long itemId) {
+    @DeleteMapping("/items/{cartItemId}")
+    public ResponseEntity<CartDTO> removeItem(@AuthenticationPrincipal Jwt principal,
+                                              @PathVariable Long cartItemId) {
         Long userId = getUserId(principal);
-        Cart updatedCart = cartService.removeItem(userId, itemId);
-        return ResponseEntity.ok(updatedCart);
+        Cart updatedCart = cartService.removeItem(userId, cartItemId);
+        // CartDTO, matching the other four endpoints. Returning the entity would
+        // serialize the whole CartItem -> Product graph and only works because
+        // spring.jpa.open-in-view still defaults to true.
+        return ResponseEntity.ok(cartMapper.toDTO(updatedCart));
     }
 
 

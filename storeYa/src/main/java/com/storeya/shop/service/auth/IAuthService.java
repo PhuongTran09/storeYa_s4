@@ -4,7 +4,6 @@ import com.storeya.shop.dto.request.LoginRequest;
 import com.storeya.shop.dto.request.RegisterRequest;
 import com.storeya.shop.dto.response.TokenResponse;
 import com.storeya.shop.entity.User;
-import org.keycloak.representations.AccessToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 public interface IAuthService {

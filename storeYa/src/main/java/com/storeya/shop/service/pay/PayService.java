@@ -142,9 +142,26 @@ public class PayService implements IPayService {
         String orderIdStr = vnPayParams.get("vnp_TxnRef");
         String transactionId = vnPayParams.get("vnp_TransactionNo");
         String responseCode = vnPayParams.get("vnp_ResponseCode");
-        long amountFromVnPay = Long.parseLong(vnPayParams.get("vnp_Amount")) / 100;
+        String amountStr = vnPayParams.get("vnp_Amount");
 
-        Payment payment = paymentRepository.findById(Long.parseLong(orderIdStr))
+        // This endpoint is permitAll, so a malformed callback must not surface as a
+        // NumberFormatException / 500 stack trace.
+        if (orderIdStr == null || amountStr == null) {
+            log.warn("VNPay IPN ignored: missing vnp_TxnRef or vnp_Amount");
+            return;
+        }
+
+        long amountFromVnPay;
+        long orderId;
+        try {
+            amountFromVnPay = Long.parseLong(amountStr) / 100;
+            orderId = Long.parseLong(orderIdStr);
+        } catch (NumberFormatException e) {
+            log.warn("VNPay IPN ignored: non-numeric vnp_Amount or vnp_TxnRef");
+            return;
+        }
+
+        Payment payment = paymentRepository.findById(orderId)
                 .orElse(null);
         if (payment == null || payment.getStatus() != PaymentStatus.PENDING) {
             return;
@@ -185,9 +202,14 @@ public class PayService implements IPayService {
     @Override
     @Transactional
     public Map<String, Object> retryPayment(PaymentDTO dto, HttpServletRequest request) {
+        // One message for "does not exist" and "not yours": distinguishing them would
+        // let a caller probe which setCodes are real.
         Payment payment = paymentRepository.findBySetCode(dto.getSetCode())
-                .orElseThrow(() -> new RuntimeException("Payment not found"));
+                .orElseThrow(() -> new SecurityException("Không tìm thấy đơn hàng phù hợp."));
 
+        if (!Objects.equals(payment.getUser() == null ? null : payment.getUser().getId(), dto.getUserId())) {
+            throw new SecurityException("Không tìm thấy đơn hàng phù hợp.");
+        }
 
         if (payment.getStatus() == PaymentStatus.PAID)
             throw new RuntimeException("Đơn hàng đã được thanh toán.");
@@ -347,8 +369,12 @@ public class PayService implements IPayService {
         }
     }
 
-    private String generateCodeId() {
-        return "HD" + generateStringRandom(4);
+    // package-private for PaymentCodeStrengthTest
+    String generateCodeId() {
+        // 12 chars, not 4: callers could enumerate the old "HD" + 4-char space (~1.68M)
+        // and retry-pay someone else's order. Payment.setCode has no @Column(length),
+        // so the wider value fits the existing varchar(255) and old codes still resolve.
+        return "HD" + generateStringRandom(12);
     }
 
     private void restoreProductStock(Payment payment) {

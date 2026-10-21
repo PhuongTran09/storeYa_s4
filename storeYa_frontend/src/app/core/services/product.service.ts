@@ -50,13 +50,5 @@ export class ProductService {
     return this.http.get<Product>(`${BASE_URL}/public/${id}`);
   }
 
-  getProductsByCategory(categoryId?: number) {
-    let url = `${BASE_URL}/products`;
-    if (categoryId) {
-      url += `?categoryId=${categoryId}`;
-    }
-    return this.http.get<Product[]>(url);
-  }
-
 
 }

@@ -4,6 +4,7 @@ import com.storeya.shop.entity.Category;
 import com.storeya.shop.service.category.ICategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,12 +34,14 @@ public class CategoryController {
 
     // Thêm category mới
     @PostMapping()
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Category> create(@RequestBody Category category) {
         return ResponseEntity.ok(categoryService.create(category));
     }
 
     // Cập nhật category
     @PutMapping("{id}")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Category> update(@PathVariable Long id,@RequestBody Category category) {
         Optional<Category> existing = categoryService.findById(id);
         if (existing.isPresent()) {
@@ -51,6 +54,7 @@ public class CategoryController {
 
     // Xóa category
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();

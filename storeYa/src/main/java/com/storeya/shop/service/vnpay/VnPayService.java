@@ -16,6 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -97,7 +98,14 @@ public class VnPayService implements IVnPayService {
 
             String calculatedHash = VNPayUtil.hmacSHA512(config.getVnp_HashSecret(), hashData.toString());
 
-            if (calculatedHash.equals(vnp_SecureHash)) {
+            // Constant-time: this is the check that decides whether money moved, and a
+            // short-circuiting equals() leaks the expected hash byte by byte to an
+            // attacker able to time requests.
+            boolean signatureValid = vnp_SecureHash != null && MessageDigest.isEqual(
+                    calculatedHash.getBytes(StandardCharsets.UTF_8),
+                    vnp_SecureHash.getBytes(StandardCharsets.UTF_8));
+
+            if (signatureValid) {
                 response.put("RspCode", "00");
                 response.put("Message", "Confirm Success");
             } else {
@@ -169,12 +177,14 @@ public class VnPayService implements IVnPayService {
             String vnp_SecureHash = VNPayUtil.hmacSHA512(config.getVnp_HashSecret(), hashData.toString());
             vnp_Params.put("vnp_SecureHash", vnp_SecureHash);
 
-            log.info("Sending VNPay Refund Request: {}", vnp_Params);
+            // Never log the map as-is: it carries vnp_SecureHash, which is derived from
+            // the merchant secret and would leak it into log aggregation.
+            log.info("Sending VNPay Refund Request: {}", redact(vnp_Params));
 
             // Send request and get response
             String jsonBody = new JSONObject(vnp_Params).toString();
             StringBuilder responseString = getStringBuilder(jsonBody);
-            log.info("Raw VNPay Refund Response: {}", responseString);
+            log.debug("Raw VNPay Refund Response: {}", responseString);
 
             // Parse JSON response using org.json
             if (responseString != null && responseString.length() > 0) {
@@ -185,7 +195,7 @@ public class VnPayService implements IVnPayService {
                     Object value = jsonResponse.opt(key); // Use opt to handle potential nulls gracefully
                     result.put(key, value != null ? String.valueOf(value) : null);
                 }
-                log.info("Parsed VNPay Refund Response: {}", result);
+                log.debug("Parsed VNPay Refund Response: {}", redact(result));
                 // Ensure consistent error keys if needed
                 result.putIfAbsent("RspCode", result.get("vnp_ResponseCode"));
                 result.putIfAbsent("Message", result.get("vnp_Message"));
@@ -197,10 +207,23 @@ public class VnPayService implements IVnPayService {
 
         } catch (Exception e) {
             log.error("Refund VNPay error: {}", e.getMessage(), e);
+            // e.getMessage() can contain the endpoint URL and vendor response text;
+            // keep it in the log and hand the caller a stable line.
             result.put("RspCode", "99");
-            result.put("Message", "Lỗi hệ thống khi hoàn tiền VNPay: " + e.getMessage());
+            result.put("Message", "Lỗi hệ thống khi hoàn tiền VNPay");
         }
         return result;
+    }
+
+    /**
+     * Copy of the params with vnp_SecureHash masked, for logging.
+     */
+    private static Map<String, String> redact(Map<String, String> params) {
+        Map<String, String> copy = new LinkedHashMap<>(params);
+        if (copy.containsKey("vnp_SecureHash")) {
+            copy.put("vnp_SecureHash", "***");
+        }
+        return copy;
     }
 
     // Helper method to make the HTTP POST request

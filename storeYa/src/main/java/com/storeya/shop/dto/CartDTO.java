@@ -1,6 +1,5 @@
 package com.storeya.shop.dto;
 
-import com.storeya.shop.entity.Cart;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;

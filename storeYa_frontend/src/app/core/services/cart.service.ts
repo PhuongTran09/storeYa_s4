@@ -3,6 +3,7 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject, throwError} from 'rxjs';
 import {catchError, map, tap} from 'rxjs/operators';
 import {apiUrl} from '../../../environment/api.config';
+import {AuthService} from './auth.service';
 
 const BASE_URL = apiUrl.BASE_URL + '/carts';
 
@@ -33,8 +34,12 @@ export class CartService {
     map(items => items.reduce((sum, item) => sum + item.quantity, 0))
   );
 
-  constructor(private http: HttpClient) {
-    this.loadCart().subscribe();
+  constructor(private http: HttpClient, private auth: AuthService) {
+    // /api/carts requires a token; CartService is injected into public pages such as
+    // product detail, so an anonymous visitor would otherwise eat a guaranteed 401.
+    if (this.auth.getToken()) {
+      this.loadCart().subscribe();
+    }
   }
 
   /** Tải giỏ hàng từ server */
@@ -57,19 +62,20 @@ export class CartService {
     );
   }
 
-  /** Cập nhật số lượng */
-  updateQuantity(itemId: number, quantity: number) {
+  /** Cập nhật số lượng — cartItemId is CartItem.id (what cart-item.component emits),
+   *  not the product id. */
+  updateQuantity(cartItemId: number, quantity: number) {
     const params = new HttpParams().set('quantity', quantity);
 
-    return this.http.put<{ items: any[] }>(`${BASE_URL}/items/update/${itemId}`, null, { params }).pipe(
+    return this.http.put<{ items: any[] }>(`${BASE_URL}/items/update/${cartItemId}`, null, { params }).pipe(
       tap(res => this._updateCartState(res)),
       catchError(err => this._handleError(err))
     );
   }
 
   /** Xóa item khỏi giỏ */
-  removeItem(itemId: number) {
-    return this.http.delete<{ items: any[] }>(`${BASE_URL}/items/${itemId}`).pipe(
+  removeItem(cartItemId: number) {
+    return this.http.delete<{ items: any[] }>(`${BASE_URL}/items/${cartItemId}`).pipe(
       tap(res => this._updateCartState(res)),
       catchError(err => this._handleError(err))
     );
@@ -77,7 +83,9 @@ export class CartService {
 
   /** Xóa toàn bộ giỏ */
   clearCart() {
-    return this.http.delete(`${BASE_URL}/clear`).pipe(
+    // The backend maps DELETE on the /carts root (CartController#clearCart); there is
+    // no /clear route, so the old URL 404'd silently and the server cart stayed filled.
+    return this.http.delete(BASE_URL).pipe(
       tap(() => {
         // Xóa state ở local
         this.cartSubject.next([]);

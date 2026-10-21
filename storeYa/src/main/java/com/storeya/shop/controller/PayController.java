@@ -38,7 +38,9 @@ public class PayController {
 
 
     @PostMapping("/{paymentId}/confirm")
-    @PreAuthorize("hasRole('admin')")
+    // hasAuthority, not hasRole: CustomAuthoritiesConverter emits the raw realm
+    // role "admin", while hasRole() would look for "ROLE_admin" and always deny.
+    @PreAuthorize("hasAuthority('admin')")
     public PaymentDTO confirmPayment(@PathVariable Long paymentId) {
         return payService.confirmPayment(paymentId);
     }

@@ -1,11 +1,10 @@
 package com.storeya.shop.utils;
 
 import java.security.SecureRandom;
-import java.util.Random;
 
 public class StringRandom {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final Random random = new SecureRandom();
+    private static final SecureRandom random = new SecureRandom();
 
     public static String generateStringRandom(int length) {
         if (length <= 0) {

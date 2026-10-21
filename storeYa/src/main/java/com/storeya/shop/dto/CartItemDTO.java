@@ -1,10 +1,8 @@
 package com.storeya.shop.dto;
 
-import com.storeya.shop.entity.Product;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
 
 @Setter
 @Getter

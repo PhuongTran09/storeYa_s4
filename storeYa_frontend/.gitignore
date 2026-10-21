@@ -40,3 +40,9 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Local secrets — the frontend reads config from src/environment, but a future
+# proxy.conf.json or throwaway .env must never be committable
+.env
+.env.*
+!.env.example

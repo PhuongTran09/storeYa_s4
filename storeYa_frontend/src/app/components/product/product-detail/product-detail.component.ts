@@ -8,6 +8,8 @@ import { VndPipe } from '../../../shared/pipes/truncate.pipe';
 import { CartService } from '../../../core/services/cart.service';  // 👈 import CartService
 import { ToastComponent } from '../../../shared/toast/toast.component';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { NavbarService } from '../../../core/services/navbar.service';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -30,7 +32,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private productService: ProductService,
     private cartService: CartService,   // 👈 inject service
-    private toast: ToastService  // 👈 inject ToastService
+    private toast: ToastService,  // 👈 inject ToastService
+    private auth: AuthService,
+    private navbarService: NavbarService
   ) { }
 
   ngOnInit() {
@@ -100,6 +104,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
   addToCart() {
     if (!this.product) return;
+
+    // This page is public, and /api/carts now requires a token.
+    if (!this.auth.getToken()) {
+      this.navbarService.openLoginModal();
+      this.toast.show('Bạn cần đăng nhập để thêm vào giỏ', 'warning');
+      return;
+    }
 
     // Hiển thị toast loading
     this.toast.show('Đang thêm sản phẩm vào giỏ...', 'loading');

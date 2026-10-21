@@ -6,7 +6,6 @@ import com.storeya.shop.dto.request.RegisterRequest;
 import com.storeya.shop.dto.response.ApiResponse;
 import com.storeya.shop.dto.response.TokenResponse;
 import com.storeya.shop.service.auth.IAuthService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -31,29 +30,27 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest request) {
-
         try {
             TokenResponse token = authService.login(request);
-            logger.info("Login Successfully");
+            logger.info("Login succeeded for user");
             return ResponseEntity.ok(token);
         } catch (Exception e) {
-            logger.error("Login failed for user {}: {}", request.getMail(), e.getMessage());
+            // Cause stays server-side: authService.login wraps Keycloak's response text,
+            // which names the issuer URL and grant details.
+            logger.warn("Login failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Login failed");
+                    .body(ApiResponse.error("Sai email hoặc mật khẩu."));
         }
     }
 
+    /**
+     * No try/catch here: duplicates surface as ResponseStatusException(409) and anything
+     * unexpected becomes a generic 500, both handled by GlobalExceptionHandler.
+     */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<?>> register(@RequestBody @Valid RegisterRequest request) {
-        try {
-            authService.registerUser(request);
-            return ResponseEntity.ok(ApiResponse.success("Registration successful", null));
-        } catch (Exception e) {
-            logger.error("Registration failed for user {}: {}", request.getUsername(), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage()));
-        }
+        authService.registerUser(request);
+        return ResponseEntity.ok(ApiResponse.success("Registration successful", null));
     }
 
     @PostMapping("/forgot-password")
@@ -63,13 +60,10 @@ public class AuthController {
                     .body(Map.of("message", "Email không được để trống"));
         }
 
-        try {
-            authService.sendOtp(request.getEmail());
-            return ResponseEntity.ok(Map.of("message", "OTP đã gửi đến email của bạn"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Gửi OTP thất bại: " + e.getMessage()));
-        }
+        // Always the same reply. sendOtp stays quiet about unknown addresses and
+        // exhausted quotas, so this endpoint cannot confirm or deny an account.
+        authService.sendOtp(request.getEmail());
+        return ResponseEntity.ok(Map.of("message", "OTP đã gửi đến email của bạn"));
     }
 
 
@@ -82,22 +76,25 @@ public class AuthController {
                     .body(Map.of("message", "Email, OTP và mật khẩu mới đều là bắt buộc"));
         }
 
-        try {
-            authService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
-            return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("message", "Đổi mật khẩu thất bại: " + e.getMessage()));
-        }
+        authService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
     }
 
+    /**
+     * The refresh token comes from the request body, which is what the frontend already
+     * sends. It used to be read from HttpSession, but nothing ever wrote that attribute
+     * (login only returns the token), so Keycloak logout was never called and the SSO
+     * session survived "sign out". Taking HttpSession as a parameter also made Spring
+     * mint a throwaway session per call.
+     */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpSession session) {
-        String refreshToken = (String) session.getAttribute("refresh_token");
-        if (refreshToken != null) {
-            authService.logout(refreshToken); // gọi Keycloak logout
+    public ResponseEntity<Map<String, String>> logout(@RequestBody(required = false) Map<String, String> body) {
+        String refreshToken = body == null ? null : body.get("refreshToken");
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            authService.logout(refreshToken);
+        } else {
+            logger.warn("Logout requested without a refresh token; Keycloak session left active");
         }
-        session.invalidate(); // clear session
         return ResponseEntity.ok(Map.of("message", "Logout thành công"));
     }
 
@@ -108,14 +105,10 @@ public class AuthController {
             TokenResponse newToken = authService.refreshToken(refreshToken);
             return ResponseEntity.ok(newToken);
         } catch (Exception e) {
-            System.err.println("Refresh token invalid or expired: " + e.getMessage());
+            logger.warn("Refresh token invalid or expired: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "invalid_refresh_token"));
         }
     }
-
-
-
-
 
 }

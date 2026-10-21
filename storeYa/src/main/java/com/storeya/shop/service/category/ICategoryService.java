@@ -1,7 +1,6 @@
 package com.storeya.shop.service.category;
 
 import com.storeya.shop.entity.Category;
-import com.storeya.shop.entity.Product;
 
 import java.util.List;
 import java.util.Optional;

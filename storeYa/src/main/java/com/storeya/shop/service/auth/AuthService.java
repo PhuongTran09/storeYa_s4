@@ -5,6 +5,7 @@ import com.storeya.shop.dto.request.RegisterRequest;
 import com.storeya.shop.dto.response.TokenResponse;
 import com.storeya.shop.entity.User;
 import com.storeya.shop.repository.UserRepository;
+import com.storeya.shop.security.RedisWindowCounter;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,16 +21,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 public class AuthService implements IAuthService {
+
+    private static final SecureRandom OTP_RANDOM = new SecureRandom();
+
+    private static final Duration OTP_WINDOW = Duration.ofMinutes(15);
 
     @Value("${keycloak.auth-server-url}")
     private String authUrl;
@@ -43,17 +52,25 @@ public class AuthService implements IAuthService {
     @Value("${keycloak.credentials.secret}")
     private String clientSecret;
 
+    @Value("${security.rate-limit.otp-send-per-15min:3}")
+    private int otpSendLimit;
+
+    @Value("${security.rate-limit.otp-attempts:5}")
+    private int otpMaxAttempts;
+
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final StringRedisTemplate redisTemplate;
     private final JavaMailSender javaMailSender;
+    private final RedisWindowCounter windowCounter;
 
-    public AuthService(UserRepository userRepository, ModelMapper modelMapper, StringRedisTemplate redisTemplate, JavaMailSender javaMailSender) {
+    public AuthService(UserRepository userRepository, ModelMapper modelMapper, StringRedisTemplate redisTemplate, JavaMailSender javaMailSender, RedisWindowCounter windowCounter) {
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
 
         this.redisTemplate = redisTemplate;
         this.javaMailSender = javaMailSender;
+        this.windowCounter = windowCounter;
     }
 
     @Override
@@ -121,12 +138,17 @@ public class AuthService implements IAuthService {
     @Override
     public User registerUser(RegisterRequest request) {
 
+        // Deliberately vague and identical for both cases: distinguishing "email taken"
+        // from "username taken" would re-open the account enumeration that sendOtp closes.
+        // The wording points an existing member at login instead.
+        final String cannotRegister = "Không thể đăng ký với thông tin đã nhập. Nếu bạn đã có tài khoản, hãy đăng nhập.";
+
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, cannotRegister);
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, cannotRegister);
         }
         String hash = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
         User user = modelMapper.map(request, User.class);
@@ -140,15 +162,23 @@ public class AuthService implements IAuthService {
     @Override
     public void sendOtp(String email) {
         String normalizedEmail = email.trim().toLowerCase();
-        Optional<User> user = userRepository.findByEmailNormalized(normalizedEmail);
 
-        if (user.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy user với email này");
+        // Unknown address and exhausted quota both return quietly: a distinguishable
+        // error here makes this endpoint a user-enumeration oracle and a free mail bomb.
+        if (userRepository.findByEmailNormalized(normalizedEmail).isEmpty()) {
+            log.warn("OTP requested for an address with no account");
+            return;
+        }
+
+        if (windowCounter.increment("OTP:SEND:" + normalizedEmail, OTP_WINDOW) > otpSendLimit) {
+            log.warn("OTP send quota exhausted for this address");
+            return;
         }
 
         try {
-            String otp = String.format("%06d", new Random().nextInt(999999));
+            String otp = String.format("%06d", OTP_RANDOM.nextInt(1_000_000));
             redisTemplate.opsForValue().set("OTP:" + normalizedEmail, otp, 2, TimeUnit.MINUTES);
+            windowCounter.reset("OTP:ATT:" + normalizedEmail);
 
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -171,7 +201,9 @@ public class AuthService implements IAuthService {
 
             javaMailSender.send(message);
         } catch (Exception e) {
-            throw new RuntimeException("Gửi email thất bại: " + e.getMessage());
+            // The SMTP cause stays in the log; the client only gets a generic line.
+            log.error("OTP email delivery failed", e);
+            throw new RuntimeException("Không thể gửi mã lúc này, vui lòng thử lại sau");
         }
     }
 
@@ -180,18 +212,33 @@ public class AuthService implements IAuthService {
     public void resetPassword(String email, String otp, String newPassword) {
         String normalizedEmail = email.trim().toLowerCase();
 
-        // Lấy OTP trong Redis
+        // One message for every failure mode. Distinguishing "no such user" from
+        // "expired" from "wrong code" would hand out a valid-account oracle.
+        final String invalidOtp = "Mã OTP không hợp lệ hoặc đã hết hạn.";
+
+        if (otp == null || !otp.matches("\\d{6}")) {
+            throw new RuntimeException(invalidOtp);
+        }
+
+        // A 6-digit code with a 2-minute TTL is 10^6 combinations, so it is only safe
+        // with a hard attempt ceiling. Over the ceiling the code is burned immediately.
+        if (windowCounter.increment("OTP:ATT:" + normalizedEmail, OTP_WINDOW) > otpMaxAttempts) {
+            redisTemplate.delete("OTP:" + normalizedEmail);
+            throw new RuntimeException(invalidOtp);
+        }
+
         String cachedOtp = redisTemplate.opsForValue().get("OTP:" + normalizedEmail);
         if (cachedOtp == null) {
-            throw new RuntimeException("OTP đã hết hạn hoặc không tồn tại");
+            throw new RuntimeException(invalidOtp);
         }
-        if (!cachedOtp.equals(otp)) {
-            throw new RuntimeException("OTP không đúng");
+        if (!MessageDigest.isEqual(cachedOtp.getBytes(StandardCharsets.UTF_8),
+                otp.getBytes(StandardCharsets.UTF_8))) {
+            throw new RuntimeException(invalidOtp);
         }
 
         Optional<User> userOpt = userRepository.findByEmailNormalized(normalizedEmail);
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy user với email này");
+            throw new RuntimeException(invalidOtp);
         }
         User user = userOpt.get();
 
@@ -201,6 +248,7 @@ public class AuthService implements IAuthService {
 
 
         redisTemplate.delete("OTP:" + normalizedEmail);
+        windowCounter.reset("OTP:ATT:" + normalizedEmail);
     }
 
 
