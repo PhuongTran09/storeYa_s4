@@ -1,0 +1,5 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.compile.nullAnalysis.mode": "disabled",
+    "spring-boot.ls.problem.version-validation.UNSUPPORTED_OSS_VERSION": "IGNORE"
+}

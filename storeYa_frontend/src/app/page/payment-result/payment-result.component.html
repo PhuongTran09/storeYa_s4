@@ -1,0 +1,57 @@
+<div class="min-h-[60vh] flex justify-center items-center py-12 px-4">
+
+  <div *ngIf="paymentStatus === 'success'"
+    class="bg-white border border-gray-200 rounded-xl shadow-lg p-6 sm:p-10 max-w-lg w-full text-center">
+
+    <i class="fa-solid fa-circle-check text-6xl text-green-500 mb-5"></i>
+
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-2">
+      Thanh toán thành công!
+    </h2>
+
+    <p class="text-base text-gray-600 mb-6">
+      {{ message }}
+    </p>
+
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-left mb-8 space-y-2">
+
+      <p class="text-sm text-gray-700">
+        Số tiền đã thanh toán:
+        <span class="font-semibold text-green-600">{{ amount | vnd }}</span>
+      </p>
+    </div>
+
+    <a routerLink="/history-payment"
+      class="inline-block w-full sm:w-auto px-8 py-3 rounded-lg font-semibold text-white bg-sky-600 shadow-md hover:bg-sky-700 transition-colors duration-200">
+      Xem lịch sử đơn hàng
+    </a>
+  </div>
+
+  <div *ngIf="paymentStatus === 'failed'"
+    class="bg-white border border-gray-200 rounded-xl shadow-lg p-6 sm:p-10 max-w-lg w-full text-center">
+
+    <i class="fa-solid fa-circle-xmark text-6xl text-red-500 mb-5"></i>
+
+    <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-2">
+      Thanh toán thất bại
+    </h2>
+
+    <p class="text-base text-gray-600 mb-6">
+      {{ message }}
+    </p>
+
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-left mb-8 space-y-2">
+
+      <p class="text-sm text-gray-700">
+        Số tiền chưa được trừ:
+        <span class="font-semibold text-red-600">{{ amount | vnd }}</span>
+      </p>
+    </div>
+
+    <a routerLink="/payment"
+      class="inline-block w-full sm:w-auto px-8 py-3 rounded-lg font-semibold text-white bg-gray-600 shadow-md hover:bg-gray-700 transition-colors duration-200">
+      Thử lại thanh toán
+    </a>
+  </div>
+
+</div>

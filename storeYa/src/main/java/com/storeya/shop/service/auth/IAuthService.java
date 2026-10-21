@@ -1,0 +1,17 @@
+package com.storeya.shop.service.auth;
+
+import com.storeya.shop.dto.request.LoginRequest;
+import com.storeya.shop.dto.request.RegisterRequest;
+import com.storeya.shop.dto.response.TokenResponse;
+import com.storeya.shop.entity.User;
+import org.springframework.security.oauth2.jwt.Jwt;
+
+public interface IAuthService {
+    TokenResponse login(LoginRequest request);
+    TokenResponse refreshToken(String refreshToken);
+    User registerUser(RegisterRequest registerUser);
+    void sendOtp(String email);
+    void logout(String refreshToken);
+    void resetPassword(String email, String otp, String newPassword);
+    Long getUserIdFromToken(Jwt principal);
+}
